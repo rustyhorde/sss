@@ -1,0 +1,9 @@
+[package]
+authors = ["Jason Ozias <jason.g.ozias@gmail.com>"]
+edition = "2018"
+name = "sss"
+version = "0.1.0"
+
+[dependencies]
+base64 = "0"
+rand = "0"
