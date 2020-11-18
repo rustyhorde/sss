@@ -6,8 +6,49 @@
 // option. All files in the project carrying such notice may not be copied,
 // modified, or distributed except according to those terms.
 
-//! `sss`
-
+//! `sss` A [Shamir's Secret Sharing](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing) implementation in Rust
+//!
+//! # Example
+//!
+//! ```rust
+//! # use rand::{thread_rng, rngs::ThreadRng, seq::IteratorRandom};
+//! # use sss::{join, split, Error};
+//! # use std::{collections::HashMap};
+//! #
+//! # fn main() -> Result<(), Error> {
+//! let secret = "correct horse battery staple".as_bytes();
+//! // Generate 5 shares to be distributed, requiring a minimum of 3 later
+//! // to reconstruct the secret
+//! let shares = split(&secret, 5, 3)?;
+//!
+//! // Check that all 5 shares can reconstruct the secret
+//! let mut shares_to_join = shares.clone();
+//! assert_eq!(join(&shares_to_join), secret);
+//!
+//! // Remove a random share from `shares_to_join` and check that 4 shares can reconstruct
+//! // the secret
+//! let mut rng = thread_rng();
+//! let _ = choose_idx(&mut rng, &shares_to_join).and_then(|idx| shares_to_join.remove(&idx));
+//! assert_eq!(join(&shares_to_join), secret);
+//!
+//! // Remove another random share from `shares_to_join` and check that 3 shares can reconstruct
+//! // the secret
+//! let _ = choose_idx(&mut rng, &shares_to_join).and_then(|idx| shares_to_join.remove(&idx));
+//! assert_eq!(join(&shares_to_join), secret);
+//!
+//! // Remove another random share from `shares_to_join` and check that 2 shares *CANNOT*
+//! // reconstruct the secret
+//! let _ = choose_idx(&mut rng, &shares_to_join).and_then(|idx| shares_to_join.remove(&idx));
+//! assert_ne!(join(&shares_to_join), secret);
+//! #
+//! # Ok(())
+//! # }
+//!
+//! fn choose_idx(rng: &mut ThreadRng, map: &HashMap<u8, Vec<u8>>) -> Option<u8> {
+//!     map.clone().keys().choose(rng).cloned()
+//! }
+//! ```
+//!
 #![feature(crate_visibility_modifier, error_iter)]
 #![deny(
     absolute_paths_not_starting_with_crate,
@@ -39,7 +80,7 @@
     indirect_structural_match,
     inline_no_sanitize,
     invalid_codeblock_attributes,
-    invalid_html_tags,
+    // invalid_html_tags,
     invalid_value,
     irrefutable_let_patterns,
     keyword_idents,
@@ -49,7 +90,7 @@
     missing_copy_implementations,
     missing_crate_level_docs,
     missing_debug_implementations,
-    missing_doc_code_examples,
+    // missing_doc_code_examples,
     missing_docs,
     mixed_script_confusables,
     mutable_borrow_reservation_conflict,
@@ -114,107 +155,11 @@
     while_true,
 )]
 
+mod error;
 mod gf256;
+mod shamir;
 
-use std::collections::HashMap;
-
-/// Make some shares
-pub fn split(secret: &[u8], parts: usize, threshold: usize) -> HashMap<usize, Vec<u8>> {
-    let coeff_fn = |secret_byte: &u8| -> Vec<u8> { gf256::generate(threshold, *secret_byte) };
-    let gf_add =
-        |p: Vec<u8>| -> Vec<u8> { (1..=parts).map(|i| gf256::eval(&p, i as u8)).collect() };
-
-    transpose(secret.iter().map(coeff_fn).map(gf_add).collect())
-        .iter()
-        .cloned()
-        .enumerate()
-        .map(inc_key)
-        .collect()
-}
-
-fn inc_key(tuple: (usize, Vec<u8>)) -> (usize, Vec<u8>) {
-    (tuple.0 + 1, tuple.1)
-}
-
-fn transpose<T>(v: Vec<Vec<T>>) -> Vec<Vec<T>>
-where
-    T: Clone,
-{
-    if let Some(first) = v.get(0) {
-        (0..first.len())
-            .map(|i| v.iter().map(|inner| inner[i].clone()).collect::<Vec<T>>())
-            .collect()
-    } else {
-        vec![]
-    }
-}
-
-/// Join some shares
-pub fn join(shares: &HashMap<usize, Vec<u8>>) -> Vec<u8> {
-    if !shares.is_empty() {
-        let lengths: Vec<usize> = shares.values().map(Vec::len).collect();
-        let len = lengths[0];
-        let mut secret = vec![];
-        if lengths.iter().all(|x| *x == len) {
-            for i in 0..lengths[0] {
-                let mut points = vec![vec![0; 2]; shares.len()];
-                let mut j = 0;
-                for (k, v) in shares {
-                    points[j][0] = *k as u8;
-                    points[j][1] = v[i];
-                    j += 1;
-                }
-                secret.push(gf256::interpolate(points));
-            }
-        }
-
-        println!("Secret: {}", String::from_utf8_lossy(&secret));
-        secret
-    } else {
-        vec![]
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::{join, split};
-    use rand::{rngs::ThreadRng, seq::IteratorRandom, thread_rng};
-    use std::collections::HashMap;
-
-    #[test]
-    fn split_and_join() {
-        let secret = "correct horst battery staple".as_bytes();
-        let shares = split(&secret, 5, 3);
-
-        // 5 parts should work
-        let mut parts = shares.clone();
-        print_parts(&parts);
-        assert_eq!(join(&parts), secret);
-
-        // 4 parts shoud work
-        let mut rng = thread_rng();
-        let _ = choose_idx(&mut rng, &parts).and_then(|idx| parts.remove(&idx));
-        print_parts(&parts);
-        assert_eq!(join(&parts), secret);
-
-        // 3 parts should work
-        let _ = choose_idx(&mut rng, &parts).and_then(|idx| parts.remove(&idx));
-        print_parts(&parts);
-        assert_eq!(join(&parts), secret);
-
-        // 2 parts should not
-        let _ = choose_idx(&mut rng, &parts).and_then(|idx| parts.remove(&idx));
-        print_parts(&parts);
-        assert_ne!(join(&parts), secret);
-    }
-
-    fn choose_idx(rng: &mut ThreadRng, map: &HashMap<usize, Vec<u8>>) -> Option<usize> {
-        map.clone().keys().choose(rng).cloned()
-    }
-
-    fn print_parts(map: &HashMap<usize, Vec<u8>>) {
-        for (k, v) in map {
-            println!("Key: {}, Value: {:?}", k, v);
-        }
-    }
-}
+pub use error::ErrCode;
+pub use error::Error;
+pub use shamir::join;
+pub use shamir::split;

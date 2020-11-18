@@ -11,15 +11,16 @@
 mod constants;
 
 use constants::{EXP, LOG};
-use rand::Rng;
+use rand::RngCore;
 
-crate fn generate(d: usize, x: u8) -> Vec<u8> {
+crate fn generate_coeffs(d: u8, x: u8) -> Vec<u8> {
     let mut rng = rand::thread_rng();
-    let mut rand_bytes: Vec<u8>;
+    let d_usize = usize::from(d);
+    let mut rand_bytes = vec![0; d_usize];
 
     loop {
-        rand_bytes = (0..d).map(|_| rng.gen::<u8>()).collect();
-        if degree(&rand_bytes) == (d - 1) {
+        rng.fill_bytes(&mut rand_bytes);
+        if degree(&rand_bytes) == (d_usize - 1) {
             break;
         }
     }
@@ -93,7 +94,7 @@ fn sub(a: u8, b: u8) -> u8 {
 
 #[cfg(test)]
 mod test {
-    use super::{add, degree, div, eval, generate, interpolate, mul, sub};
+    use super::{add, degree, div, eval, generate_coeffs, interpolate, mul, sub};
 
     #[test]
     fn add_works() {
@@ -181,7 +182,7 @@ mod test {
 
     #[test]
     fn generate_works() {
-        let p = generate(5, 20);
+        let p = generate_coeffs(5, 20);
         assert_eq!(p[0], 20);
         // assert_eq!(p.len(), 6);
         assert!(p[p.len() - 1] != 0);
