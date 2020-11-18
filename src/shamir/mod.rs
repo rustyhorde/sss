@@ -66,7 +66,7 @@ mod test {
 
     #[test]
     fn split_and_join() -> Result<()> {
-        let secret = "correct horst battery staple".as_bytes();
+        let secret = "correct horse battery staple".as_bytes();
         let shares = split(&secret, 5, 3)?;
 
         // 5 parts should work
