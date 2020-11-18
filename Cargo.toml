@@ -5,5 +5,4 @@ name = "sss"
 version = "0.1.0"
 
 [dependencies]
-base64 = "0"
 rand = "0"
