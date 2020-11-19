@@ -8,7 +8,7 @@ keywords = ["cryptography","secret"]
 license = "MIT/Apache-2.0"
 name = "ssss"
 readme = "README.md"
-repository = ""
+repository = "https://github.com/rustyhorde/sss.git"
 version = "0.1.0"
 
 [dependencies]
