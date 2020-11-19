@@ -5,7 +5,7 @@ name = "sss"
 version = "0.1.0"
 
 [dependencies]
+getset = "0"
 rand = "0"
-getset = "0.1.1"
-serde = "1.0.117"
-serde_derive = "1.0.117"
+serde = "1"
+serde_derive = "1"

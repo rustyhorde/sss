@@ -11,7 +11,7 @@
 mod codes;
 mod sources;
 
-pub use codes::ErrCode;
+crate use codes::ErrCode;
 crate use sources::ErrSource;
 
 use getset::Getters;
@@ -47,6 +47,54 @@ impl Error {
             reason,
             source,
         }
+    }
+
+    crate fn secret_empty() -> Self {
+        Self::new(ErrCode::Protocol, "The given secret cannot be empty", None)
+    }
+
+    crate fn max_secret_len() -> Self {
+        Self::new(
+            ErrCode::Protocol,
+            "The maximum secret length has been exceeded",
+            None,
+        )
+    }
+
+    crate fn zero_p_or_t() -> Self {
+        Self::new(
+            ErrCode::Protocol,
+            "The parts and threshold arguments cannot be 0",
+            None,
+        )
+    }
+
+    crate fn invalid_threshold() -> Self {
+        Self::new(
+            ErrCode::Protocol,
+            "The threshold argument must be less than or equal to the parts argument",
+            None,
+        )
+    }
+
+    crate fn shares_map_empty() -> Self {
+        Self::new(
+            ErrCode::Protocol,
+            "The given shares map cannot be empty",
+            None,
+        )
+    }
+
+    crate fn shares_empty() -> Self {
+        Self::new(ErrCode::Protocol, "The given shares cannot be empty", None)
+    }
+
+    crate fn share_length_mismatch() -> Self {
+        Self::new(
+            ErrCode::Protocol,
+            "The given shares have differing lengths",
+            None,
+        )
     }
 }
 

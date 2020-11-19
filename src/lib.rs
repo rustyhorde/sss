@@ -6,47 +6,81 @@
 // option. All files in the project carrying such notice may not be copied,
 // modified, or distributed except according to those terms.
 
-//! `sss` A [Shamir's Secret Sharing](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing) implementation in Rust
+//! # `sss`
+//! A [Shamir's Secret Sharing](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing) implementation in Rust
+//!
+//! To quote the Wikipedia article linked above:
+//!
+//! >Shamir's Secret Sharing is used to secure a secret in a distributed way, most often to secure other encryption keys.
+//! The secret is split into multiple parts, called shares. These shares are used to reconstruct the original secret.
+//!
+//! >To unlock the secret via Shamir's secret sharing, you need a minimum number of shares. This is called the threshold,
+//! and is used to denote the minimum number of shares needed to unlock the secret. Let us walk through an example:
+//!
+//! >>Problem: Company XYZ needs to secure their vault's passcode. They could use something standard, such as AES, but what
+//! if the holder of the key is unavailable or dies? What if the key is compromised via a malicious hacker or the holder
+//! of the key turns rogue, and uses their power over the vault to their benefit?
+//!
+//! >This is where SSS comes in. It can be used to encrypt the vault's passcode and generate a certain number of shares,
+//! where a certain number of shares can be allocated to each executive within Company XYZ. Now, only if they pool their
+//! shares can they unlock the vault. The threshold can be appropriately set for the number of executives, so the vault
+//! is always able to be accessed by the authorized individuals. Should a share or two fall into the wrong hands,
+//! they couldn't open the passcode unless the other executives cooperated.
 //!
 //! # Example
 //!
-//! ```rust
+//! ```
 //! # use rand::{thread_rng, rngs::ThreadRng, seq::IteratorRandom};
-//! # use sss::{join, split, Error};
-//! # use std::{collections::HashMap};
+//! # use sss::{unlock, gen_shares, Error, SSSConfig};
+//! # use std::{collections::HashMap, hash::Hash};
 //! #
 //! # fn main() -> Result<(), Error> {
 //! let secret = "correct horse battery staple".as_bytes();
+//! let config = SSSConfig::default();
+//!
 //! // Generate 5 shares to be distributed, requiring a minimum of 3 later
-//! // to reconstruct the secret
-//! let shares = split(&secret, 5, 3)?;
+//! // to unlock the secret
+//! let mut shares = gen_shares(&config, &secret)?;
 //!
-//! // Check that all 5 shares can reconstruct the secret
-//! let mut shares_to_join = shares.clone();
-//! assert_eq!(join(&shares_to_join), secret);
+//! // Check that all 5 shares can unlock the secret
+//! assert_eq!(shares.len(), 5);
+//! assert_eq!(unlock(&shares)?, secret);
 //!
-//! // Remove a random share from `shares_to_join` and check that 4 shares can reconstruct
+//! // Remove a random share from `shares` and check that 4 shares can unlock
 //! // the secret
 //! let mut rng = thread_rng();
-//! let _ = choose_idx(&mut rng, &shares_to_join).and_then(|idx| shares_to_join.remove(&idx));
-//! assert_eq!(join(&shares_to_join), secret);
+//! remove_random_entry(&mut rng, &mut shares);
+//! assert_eq!(shares.len(), 4);
+//! assert_eq!(unlock(&shares)?, secret);
 //!
-//! // Remove another random share from `shares_to_join` and check that 3 shares can reconstruct
+//! // Remove another random share from `shares` and check that 3 shares can unlock
 //! // the secret
-//! let _ = choose_idx(&mut rng, &shares_to_join).and_then(|idx| shares_to_join.remove(&idx));
-//! assert_eq!(join(&shares_to_join), secret);
+//! remove_random_entry(&mut rng, &mut shares);
+//! assert_eq!(shares.len(), 3);
+//! assert_eq!(unlock(&shares)?, secret);
 //!
-//! // Remove another random share from `shares_to_join` and check that 2 shares *CANNOT*
-//! // reconstruct the secret
-//! let _ = choose_idx(&mut rng, &shares_to_join).and_then(|idx| shares_to_join.remove(&idx));
-//! assert_ne!(join(&shares_to_join), secret);
+//! // Remove another random share from `shares` and check that 2 shares *CANNOT*
+//! // unlock the secret
+//! remove_random_entry(&mut rng, &mut shares);
+//! assert_eq!(shares.len(), 2);
+//! assert_ne!(unlock(&shares)?, secret);
 //! #
 //! # Ok(())
 //! # }
-//!
-//! fn choose_idx(rng: &mut ThreadRng, map: &HashMap<u8, Vec<u8>>) -> Option<u8> {
-//!     map.clone().keys().choose(rng).cloned()
-//! }
+//! #
+//! # fn remove_random_entry<T, U>(rng: &mut ThreadRng, map: &mut HashMap<T, U>)
+//! # where
+//! #     T: Clone + Hash + Eq,
+//! # {
+//! # let _ = choose_idx(rng, map).and_then(|idx| map.remove(&idx));
+//! # }
+//! #
+//! # fn choose_idx<T, U>(rng: &mut ThreadRng, map: &HashMap<T, U>) -> Option<T>
+//! # where
+//! #     T: Clone,
+//! # {
+//! # map.clone().keys().choose(rng).cloned()
+//! # }
 //! ```
 //!
 #![feature(crate_visibility_modifier, error_iter)]
@@ -104,7 +138,7 @@
     overlapping_patterns,
     path_statements,
     pointer_structural_match,
-    private_doc_tests,
+    // private_doc_tests,
     private_in_public,
     proc_macro_derive_resolution_fallback,
     redundant_semicolons,
@@ -158,8 +192,10 @@
 mod error;
 mod gf256;
 mod shamir;
+#[cfg(test)]
+mod utils;
 
-pub use error::ErrCode;
 pub use error::Error;
-pub use shamir::join;
-pub use shamir::split;
+pub use shamir::gen_shares;
+pub use shamir::unlock;
+pub use shamir::SSSConfig;
