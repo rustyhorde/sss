@@ -1,7 +1,13 @@
 [package]
-authors = ["Jason Ozias <jason.g.ozias@gmail.com>"]
+authors = ["Jason Ozias <jason.ozias@kroger.com>"]
+description = "An implementation of Shamir's Secret Sharing"
+documentation = "http://docs.rs/sss"
 edition = "2018"
+homepage = "http://docs.rs/sss"
+keywords = ["cryptography","secret"]
+license = "MIT/Apache-2.0"
 name = "sss"
+readme = "README.md"
 version = "0.1.0"
 
 [dependencies]
