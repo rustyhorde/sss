@@ -6,8 +6,8 @@
 // option. All files in the project carrying such notice may not be copied,
 // modified, or distributed except according to those terms.
 
-//! # `sss`
-//! A [Shamir's Secret Sharing](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing) implementation in Rust
+//! # `ssss`
+//! A [Shamir's Secret Sharing Scheme](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing) implementation in Rust
 //!
 //! To quote the Wikipedia article linked above:
 //!
@@ -31,12 +31,12 @@
 //!
 //! ```
 //! # use rand::{thread_rng, rngs::ThreadRng, seq::IteratorRandom};
-//! # use sss::{unlock, gen_shares, Error, SSSConfig};
+//! # use ssss::{unlock, gen_shares, Error, SSSSConfig};
 //! # use std::{collections::HashMap, hash::Hash};
 //! #
 //! # fn main() -> Result<(), Error> {
 //! let secret = "correct horse battery staple".as_bytes();
-//! let config = SSSConfig::default();
+//! let config = SSSSConfig::default();
 //!
 //! // Generate 5 shares to be distributed, requiring a minimum of 3 later
 //! // to unlock the secret
@@ -198,4 +198,4 @@ mod utils;
 pub use error::Error;
 pub use shamir::gen_shares;
 pub use shamir::unlock;
-pub use shamir::SSSConfig;
+pub use shamir::SSSSConfig;

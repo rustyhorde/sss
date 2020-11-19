@@ -26,7 +26,7 @@ use utils::{filter_ok, inc_key, transpose};
 /// threshold of 3.  The maximum secret size is [u16::MAX] (65536)
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, Setters)]
 #[getset(set = "pub")]
-pub struct SSSConfig {
+pub struct SSSSConfig {
     /// The total shares to be generate from a secret
     num_shares: u8,
     /// The threshold of valid shares required to unlock a secret
@@ -36,9 +36,9 @@ pub struct SSSConfig {
     max_secret_size: usize,
 }
 
-impl Default for SSSConfig {
+impl Default for SSSSConfig {
     fn default() -> Self {
-        SSSConfig {
+        SSSSConfig {
             num_shares: 5,
             threshold: 3,
             max_secret_size: usize::from(u16::MAX),
@@ -46,7 +46,7 @@ impl Default for SSSConfig {
     }
 }
 
-impl SSSConfig {
+impl SSSSConfig {
     fn validate(&self) -> Result<()> {
         if self.num_shares == 0 || self.threshold == 0 {
             Err(Error::zero_p_or_t())
@@ -58,25 +58,25 @@ impl SSSConfig {
     }
 }
 
-/// Generate shares based on the [`num_shares`](SSSConfig::set_num_shares) and [`threshold`](SSSConfig::set_threshold) given
-/// in the configuration.  Using the default [`SSSConfig`] will generate 5 shares
+/// Generate shares based on the [`num_shares`](SSSSConfig::set_num_shares) and [`threshold`](SSSSConfig::set_threshold) given
+/// in the configuration.  Using the default [`SSSSConfig`] will generate 5 shares
 /// of which 3 are required to unlock the secret.
 ///
 /// # Errors
 /// * This function will generate an error if `secret` is empty or larger than
-/// [`max_secret_size`](SSSConfig::set_max_secret_size) in the configuration.
-/// * This function will generate an error if either [`num_shares`](SSSConfig::set_num_shares) or [`threshold`](SSSConfig::set_threshold)
+/// [`max_secret_size`](SSSSConfig::set_max_secret_size) in the configuration.
+/// * This function will generate an error if either [`num_shares`](SSSSConfig::set_num_shares) or [`threshold`](SSSSConfig::set_threshold)
 /// are 0.
-/// * This function will generate an error if [`threshold`](SSSConfig::set_threshold) is greater than [`num_shares`](SSSConfig::set_num_shares)
+/// * This function will generate an error if [`threshold`](SSSSConfig::set_threshold) is greater than [`num_shares`](SSSSConfig::set_num_shares)
 ///
 /// # Example
 /// ```
-/// # use sss::{gen_shares, unlock, Error, SSSConfig};
+/// # use ssss::{gen_shares, unlock, Error, SSSSConfig};
 /// #
 /// # pub fn main() -> Result<(), Error> {
 /// // Generate 5 shares from the given secret
 /// let secret = "s3(r37".as_bytes();
-/// let mut shares = gen_shares(&SSSConfig::default(), secret)?;
+/// let mut shares = gen_shares(&SSSSConfig::default(), secret)?;
 /// assert_eq!(shares.len(), 5);
 ///
 /// // Remove a couple shares to show 3 will unlock the secret (4 or 5 shares will as well)
@@ -93,9 +93,9 @@ impl SSSConfig {
 /// assert_ne!(secret, who_knows);
 /// # Ok(())
 /// # }
-pub fn gen_shares(config: &SSSConfig, secret: &[u8]) -> Result<HashMap<u8, Vec<u8>>> {
+pub fn gen_shares(config: &SSSSConfig, secret: &[u8]) -> Result<HashMap<u8, Vec<u8>>> {
     validate_split_args(config, secret)?;
-    let SSSConfig {
+    let SSSSConfig {
         num_shares,
         threshold,
         max_secret_size: _,
@@ -117,7 +117,7 @@ pub fn gen_shares(config: &SSSConfig, secret: &[u8]) -> Result<HashMap<u8, Vec<u
     )
 }
 
-fn validate_split_args(config: &SSSConfig, secret: &[u8]) -> Result<()> {
+fn validate_split_args(config: &SSSSConfig, secret: &[u8]) -> Result<()> {
     if secret.is_empty() {
         Err(Error::secret_empty())
     } else if secret.len() > config.max_secret_size {
@@ -142,12 +142,12 @@ fn validate_split_args(config: &SSSConfig, secret: &[u8]) -> Result<()> {
 ///
 /// # Example
 /// ```
-/// # use sss::{gen_shares, unlock, Error, SSSConfig};
+/// # use ssss::{gen_shares, unlock, Error, SSSSConfig};
 /// #
 /// # pub fn main() -> Result<(), Error> {
 /// // Generate 5 shares from the given secret
 /// let secret = "s3(r37".as_bytes();
-/// let mut shares = gen_shares(&SSSConfig::default(), secret)?;
+/// let mut shares = gen_shares(&SSSSConfig::default(), secret)?;
 /// assert_eq!(shares.len(), 5);
 ///
 /// // Remove a couple shares to show 3 will unlock the secret (4 or 5 shares will as well)
@@ -198,7 +198,7 @@ fn validate_join_args(shares: &HashMap<u8, Vec<u8>>) -> Result<usize> {
 
 #[cfg(test)]
 mod test {
-    use super::{gen_shares, unlock, SSSConfig};
+    use super::{gen_shares, unlock, SSSSConfig};
     use crate::{
         error::Result,
         utils::{check_err_result, remove_random_entry},
@@ -208,14 +208,14 @@ mod test {
 
     #[test]
     fn empty_secret() -> Result<()> {
-        let config = SSSConfig::default();
+        let config = SSSSConfig::default();
         let result = gen_shares(&config, &vec![]);
         check_err_result(result, "protocol: The given secret cannot be empty")
     }
 
     #[test]
     fn max_secret() -> Result<()> {
-        let mut config = SSSConfig::default();
+        let mut config = SSSSConfig::default();
         let _ = config.set_max_secret_size(3);
         let result = gen_shares(&config, "abcd".as_bytes());
         check_err_result(
@@ -226,7 +226,7 @@ mod test {
 
     #[test]
     fn zero_parts() -> Result<()> {
-        let mut config = SSSConfig::default();
+        let mut config = SSSSConfig::default();
         let _ = config.set_num_shares(0);
         let result = gen_shares(&config, "a".as_bytes());
         check_err_result(
@@ -237,7 +237,7 @@ mod test {
 
     #[test]
     fn zero_threshold() -> Result<()> {
-        let mut config = SSSConfig::default();
+        let mut config = SSSSConfig::default();
         let _ = config.set_threshold(0);
         let result = gen_shares(&config, "a".as_bytes());
         check_err_result(
@@ -248,7 +248,7 @@ mod test {
 
     #[test]
     fn threshold_greater_than_parts() -> Result<()> {
-        let mut config = SSSConfig::default();
+        let mut config = SSSSConfig::default();
         let _ = config.set_threshold(6);
         let result = gen_shares(&mut config, "a".as_bytes());
         check_err_result(
@@ -285,7 +285,7 @@ mod test {
 
     #[test]
     fn too_many_shares() -> Result<()> {
-        let config = SSSConfig::default();
+        let config = SSSSConfig::default();
         let secret = "a".as_bytes();
         let mut shares = gen_shares(&config, secret)?;
         let _ = shares.insert(6, vec![55]);
@@ -297,7 +297,7 @@ mod test {
     #[test]
     fn split_and_join() -> Result<()> {
         let secret = "correct horse battery staple".as_bytes();
-        let config = SSSConfig::default();
+        let config = SSSSConfig::default();
         let shares = gen_shares(&config, &secret)?;
 
         // 5 parts should work

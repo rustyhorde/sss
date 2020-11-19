@@ -142,7 +142,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sss"
+name = "ssss"
 version = "0.1.0"
 dependencies = [
  "getset",
