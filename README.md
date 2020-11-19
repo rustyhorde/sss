@@ -1,2 +1,2 @@
-# sss
-An implementation of Shamir's Secret Sharing
+# ssss
+An implementation of Shamir's Secret Sharing Scheme

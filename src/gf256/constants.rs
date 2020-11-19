@@ -1,4 +1,4 @@
-// Copyright (c) 2020 sss developers
+// Copyright (c) 2020 ssss developers
 //
 // Licensed under the Apache License, Version 2.0
 // <LICENSE-APACHE or http://www.apache.org/licenses/LICENSE-2.0> or the MIT
@@ -6,7 +6,7 @@
 // option. All files in the project carrying such notice may not be copied,
 // modified, or distributed except according to those terms.
 
-//! `sss` GF(2^8) constants
+//! `ssss` GF(2^8) constants
 
 crate const LOG: [u8; 256] = [
     0xff, 0x00, 0x19, 0x01, 0x32, 0x02, 0x1a, 0xc6, 0x4b, 0xc7, 0x1b, 0x68, 0x33, 0xee, 0xdf, 0x03,

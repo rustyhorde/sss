@@ -1,4 +1,4 @@
-// Copyright (c) 2020 sss developers
+// Copyright (c) 2020 ssss developers
 //
 // Licensed under the Apache License, Version 2.0
 // <LICENSE-APACHE or http://www.apache.org/licenses/LICENSE-2.0> or the MIT
@@ -6,7 +6,7 @@
 // option. All files in the project carrying such notice may not be copied,
 // modified, or distributed except according to those terms.
 
-//! `sss` error sources
+//! `ssss` error sources
 
 use crate::error::{ErrCode, Error};
 use std::fmt;

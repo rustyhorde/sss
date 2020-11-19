@@ -1,4 +1,4 @@
-// Copyright (c) 2020 sss developers
+// Copyright (c) 2020 ssss developers
 //
 // Licensed under the Apache License, Version 2.0
 // <LICENSE-APACHE or http://www.apache.org/licenses/LICENSE-2.0> or the MIT
@@ -21,7 +21,7 @@
 //! if the holder of the key is unavailable or dies? What if the key is compromised via a malicious hacker or the holder
 //! of the key turns rogue, and uses their power over the vault to their benefit?
 //!
-//! >This is where SSS comes in. It can be used to encrypt the vault's passcode and generate a certain number of shares,
+//! >This is where ssss comes in. It can be used to encrypt the vault's passcode and generate a certain number of shares,
 //! where a certain number of shares can be allocated to each executive within Company XYZ. Now, only if they pool their
 //! shares can they unlock the vault. The threshold can be appropriately set for the number of executives, so the vault
 //! is always able to be accessed by the authorized individuals. Should a share or two fall into the wrong hands,
