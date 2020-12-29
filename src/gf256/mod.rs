@@ -81,7 +81,7 @@ fn mul(a: u8, b: u8) -> u8 {
 }
 
 fn div(a: u8, b: u8) -> u8 {
-    mul(a, EXP[255usize - usize::from(LOG[usize::from(b)])])
+    mul(a, EXP[255_usize - usize::from(LOG[usize::from(b)])])
 }
 
 fn add(a: u8, b: u8) -> u8 {
