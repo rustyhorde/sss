@@ -42,23 +42,21 @@ impl fmt::Display for ErrCode {
     }
 }
 
-impl Into<&str> for ErrCode {
-    #[must_use]
-    fn into(self) -> &'static str {
-        match self {
-            Self::Env => "env",
-            Self::Io => "io",
-            Self::Parse => "parse",
-            Self::Protocol => "protocol",
-            Self::Unknown => "unknown",
+impl From<ErrCode> for &'static str {
+    fn from(ec: ErrCode) -> &'static str {
+        match ec {
+            ErrCode::Env => "env",
+            ErrCode::Io => "io",
+            ErrCode::Parse => "parse",
+            ErrCode::Protocol => "protocol",
+            ErrCode::Unknown => "unknown",
         }
     }
 }
 
-impl Into<String> for ErrCode {
-    #[must_use]
-    fn into(self) -> String {
-        let tmp: &str = self.into();
+impl From<ErrCode> for String {
+    fn from(ec: ErrCode) -> String {
+        let tmp: &str = ec.into();
         tmp.to_string()
     }
 }

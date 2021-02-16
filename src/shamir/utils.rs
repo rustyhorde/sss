@@ -19,7 +19,7 @@ crate fn filter_ok<T>(result: Result<T>) -> Option<T> {
     result.ok()
 }
 
-crate fn transpose<T>(v: Vec<Vec<T>>) -> Vec<Vec<T>>
+crate fn transpose<T>(v: &[Vec<T>]) -> Vec<Vec<T>>
 where
     T: Clone,
 {

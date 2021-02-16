@@ -32,13 +32,13 @@ crate fn generate_coeffs(d: u8, x: u8) -> Vec<u8> {
 crate fn eval(p: &[u8], x: u8) -> u8 {
     let mut result = 0;
 
-    for i in (0..=(p.len() - 1)).rev() {
+    for i in (0..p.len()).rev() {
         result = add(mul(result, x), p[i])
     }
     result
 }
 
-crate fn interpolate(points: Vec<Vec<u8>>) -> u8 {
+crate fn interpolate(points: &[Vec<u8>]) -> u8 {
     let x = 0;
     let mut y = 0;
 
@@ -47,8 +47,8 @@ crate fn interpolate(points: Vec<Vec<u8>>) -> u8 {
         let a_y = points[i][1];
         let mut li = 1;
 
-        for j in 0..points.len() {
-            let b_x = points[j][0];
+        for (j, thing) in points.iter().enumerate() {
+            let b_x = thing[0];
             if i != j {
                 li = mul(li, div(sub(x, b_x), sub(a_x, b_x)));
             }
@@ -60,7 +60,7 @@ crate fn interpolate(points: Vec<Vec<u8>>) -> u8 {
 }
 
 fn degree(p: &[u8]) -> usize {
-    for i in (1..=(p.len() - 1)).rev() {
+    for i in (1..p.len()).rev() {
         if p[i] != 0 {
             return i;
         }
@@ -190,10 +190,13 @@ mod test {
 
     #[test]
     fn interpolate_works() {
-        assert_eq!(interpolate(vec![vec![1, 1], vec![2, 2], vec![3, 3]]), 0);
-        assert_eq!(interpolate(vec![vec![1, 80], vec![2, 90], vec![3, 20]]), 30);
+        assert_eq!(interpolate(&vec![vec![1, 1], vec![2, 2], vec![3, 3]]), 0);
         assert_eq!(
-            interpolate(vec![vec![1, 43], vec![2, 22], vec![3, 86]]),
+            interpolate(&vec![vec![1, 80], vec![2, 90], vec![3, 20]]),
+            30
+        );
+        assert_eq!(
+            interpolate(&vec![vec![1, 43], vec![2, 22], vec![3, 86]]),
             107
         );
     }

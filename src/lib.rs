@@ -31,12 +31,12 @@
 //!
 //! ```
 //! # use rand::{thread_rng, rngs::ThreadRng, seq::IteratorRandom};
-//! # use ssss::{unlock, gen_shares, Error, SSSSConfig};
+//! # use ssss::{unlock, gen_shares, Error, SsssConfig};
 //! # use std::{collections::HashMap, hash::Hash};
 //! #
 //! # fn main() -> Result<(), Error> {
 //! let secret = "correct horse battery staple".as_bytes();
-//! let config = SSSSConfig::default();
+//! let config = SsssConfig::default();
 //!
 //! // Generate 5 shares to be distributed, requiring a minimum of 3 later
 //! // to unlock the secret
@@ -200,4 +200,4 @@ mod utils;
 pub use error::Error;
 pub use shamir::gen_shares;
 pub use shamir::unlock;
-pub use shamir::SSSSConfig;
+pub use shamir::SsssConfig;

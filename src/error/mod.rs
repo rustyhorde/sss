@@ -31,12 +31,12 @@ pub struct Error {
     reason: String,
     /// the source
     #[serde(skip)]
-    source: Option<ErrSource>,
+    err_source: Option<ErrSource>,
 }
 
 impl Error {
     /// Create a new error
-    crate fn new<U>(code: ErrCode, reason: U, source: Option<ErrSource>) -> Self
+    crate fn new<U>(code: ErrCode, reason: U, err_source: Option<ErrSource>) -> Self
     where
         U: Into<String>,
     {
@@ -45,7 +45,7 @@ impl Error {
         Self {
             code,
             reason,
-            source,
+            err_source,
         }
     }
 
@@ -100,12 +100,12 @@ impl Error {
 
 impl std::error::Error for Error {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        if let Some(ref x) = self.source {
-            Some(x)
-        } else {
-            None
-        }
+        self.err_source.as_ref().map(convert_err)
     }
+}
+
+fn convert_err(e: &ErrSource) -> &(dyn std::error::Error + 'static) {
+    e
 }
 
 impl fmt::Display for Error {
@@ -127,8 +127,8 @@ impl From<&str> for Error {
     fn from(text: &str) -> Self {
         let split = text.split(':');
         let vec = split.collect::<Vec<&str>>();
-        let code = vec.get(0).unwrap_or_else(|| &"");
-        let reason = vec.get(1).unwrap_or_else(|| &"");
+        let code = vec.get(0).unwrap_or(&"");
+        let reason = vec.get(1).unwrap_or(&"");
         Self::new((*code).into(), *reason, None)
     }
 }
@@ -137,8 +137,8 @@ impl From<String> for Error {
     fn from(text: String) -> Self {
         let split = text.split(':');
         let vec = split.collect::<Vec<&str>>();
-        let code = vec.get(0).unwrap_or_else(|| &"");
-        let reason = vec.get(1).unwrap_or_else(|| &"");
+        let code = vec.get(0).unwrap_or(&"");
+        let reason = vec.get(1).unwrap_or(&"");
         Self::new((*code).into(), *reason, None)
     }
 }
