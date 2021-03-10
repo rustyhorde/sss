@@ -93,4 +93,5 @@ jobs:
         uses: codecov/codecov-action@v1
         if: matrix.os == 'ubuntu-latest'
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./cobertura.xml
