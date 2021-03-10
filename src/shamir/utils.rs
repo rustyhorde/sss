@@ -31,3 +31,14 @@ where
         vec![]
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::transpose;
+
+    #[test]
+    fn transpose_empty_works() {
+        let empty_vec: Vec<Vec<u8>> = vec![];
+        assert!(transpose(&empty_vec).is_empty());
+    }
+}
