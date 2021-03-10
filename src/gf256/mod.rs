@@ -13,7 +13,7 @@ mod constants;
 use constants::{EXP, LOG};
 use rand::RngCore;
 
-crate fn generate_coeffs(d: u8, x: u8) -> Vec<u8> {
+pub(crate) fn generate_coeffs(d: u8, x: u8) -> Vec<u8> {
     let mut rng = rand::thread_rng();
     let d_usize = usize::from(d);
     let mut rand_bytes = vec![0; d_usize];
@@ -29,7 +29,7 @@ crate fn generate_coeffs(d: u8, x: u8) -> Vec<u8> {
     rand_bytes
 }
 
-crate fn eval(p: &[u8], x: u8) -> u8 {
+pub(crate) fn eval(p: &[u8], x: u8) -> u8 {
     let mut result = 0;
 
     for i in (0..p.len()).rev() {
@@ -38,7 +38,7 @@ crate fn eval(p: &[u8], x: u8) -> u8 {
     result
 }
 
-crate fn interpolate(points: &[Vec<u8>]) -> u8 {
+pub(crate) fn interpolate(points: &[Vec<u8>]) -> u8 {
     let x = 0;
     let mut y = 0;
 

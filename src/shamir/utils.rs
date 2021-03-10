@@ -8,18 +8,18 @@
 
 //! `ssss` utils
 
-use crate::error::Result;
+use anyhow::Result;
 use std::convert::TryFrom;
 
-crate fn inc_key(tuple: (usize, Vec<u8>)) -> Result<(u8, Vec<u8>)> {
+pub(crate) fn inc_key(tuple: (usize, Vec<u8>)) -> Result<(u8, Vec<u8>)> {
     Ok((u8::try_from(tuple.0 + 1)?, tuple.1))
 }
 
-crate fn filter_ok<T>(result: Result<T>) -> Option<T> {
+pub(crate) fn filter_ok<T>(result: Result<T>) -> Option<T> {
     result.ok()
 }
 
-crate fn transpose<T>(v: &[Vec<T>]) -> Vec<Vec<T>>
+pub(crate) fn transpose<T>(v: &[Vec<T>]) -> Vec<Vec<T>>
 where
     T: Clone,
 {

@@ -30,11 +30,12 @@
 //! # Example
 //!
 //! ```
+//! # use anyhow::Result;
 //! # use rand::{thread_rng, rngs::ThreadRng, seq::IteratorRandom};
-//! # use ssss::{unlock, gen_shares, Error, SsssConfig};
+//! # use ssss::{unlock, gen_shares, SsssConfig};
 //! # use std::{collections::HashMap, hash::Hash};
 //! #
-//! # fn main() -> Result<(), Error> {
+//! # fn main() -> Result<()> {
 //! let secret = "correct horse battery staple".as_bytes();
 //! let config = SsssConfig::default();
 //!
@@ -83,7 +84,6 @@
 //! # }
 //! ```
 //!
-#![feature(crate_visibility_modifier, error_iter)]
 #![deny(
     absolute_paths_not_starting_with_crate,
     anonymous_parameters,
@@ -92,11 +92,8 @@
     bare_trait_objects,
     bindings_with_variant_name,
     box_pointers,
-    broken_intra_doc_links,
     cenum_impl_drop_cast,
     clashing_extern_declarations,
-    clippy::all,
-    clippy::pedantic,
     coherence_leak_check,
     confusable_idents,
     const_evaluatable_unchecked,
@@ -104,19 +101,20 @@
     dead_code,
     deprecated,
     deprecated_in_future,
+    // disjoint_capture_drop_reorder,
     drop_bounds,
     elided_lifetimes_in_paths,
     ellipsis_inclusive_range_patterns,
     explicit_outlives_requirements,
     exported_private_dependencies,
+    forbidden_lint_groups,
+    function_item_references,
     illegal_floating_point_literal_pattern,
     improper_ctypes,
     improper_ctypes_definitions,
     incomplete_features,
     indirect_structural_match,
     inline_no_sanitize,
-    invalid_codeblock_attributes,
-    // invalid_html_tags,
     invalid_value,
     irrefutable_let_patterns,
     keyword_idents,
@@ -124,15 +122,14 @@
     macro_use_extern_crate,
     meta_variable_misuse,
     missing_copy_implementations,
-    missing_crate_level_docs,
     missing_debug_implementations,
-    // missing_doc_code_examples,
     missing_docs,
     mixed_script_confusables,
     mutable_borrow_reservation_conflict,
     no_mangle_generic_items,
     non_ascii_idents,
     non_camel_case_types,
+    non_fmt_panic,
     non_shorthand_field_patterns,
     non_snake_case,
     non_upper_case_globals,
@@ -140,7 +137,6 @@
     overlapping_range_endpoints,
     path_statements,
     pointer_structural_match,
-    // private_doc_tests,
     private_in_public,
     proc_macro_derive_resolution_fallback,
     redundant_semicolons,
@@ -148,6 +144,7 @@
     safe_packed_borrows,
     single_use_lifetimes,
     stable_features,
+    temporary_cstring_as_ptr,
     trivial_bounds,
     trivial_casts,
     trivial_numeric_casts,
@@ -156,6 +153,7 @@
     unaligned_references,
     uncommon_codepoints,
     unconditional_recursion,
+    uninhabited_static,
     unknown_lints,
     unnameable_test_items,
     unreachable_code,
@@ -163,8 +161,9 @@
     unreachable_pub,
     unsafe_code,
     // unsafe_op_in_unsafe_fn,
-    // unstable_features,
+    unstable_features,
     unstable_name_collisions,
+    unsupported_naked_functions,
     unused_allocation,
     unused_assignments,
     unused_attributes,
@@ -190,6 +189,34 @@
     where_clauses_object_safety,
     while_true,
 )]
+// clippy lints
+#![deny(clippy::all, clippy::pedantic)]
+// stable/beta only lints
+#![cfg_attr(
+    not(nightly_lints),
+    deny(
+        broken_intra_doc_links,
+        invalid_codeblock_attributes,
+        invalid_html_tags,
+        missing_crate_level_docs,
+    )
+)]
+// nightly only lints
+#![cfg_attr(
+    nightly_lints,
+    deny(
+        // disjoint_capture_drop_reorder,
+        ineffective_unstable_trait_impl,
+        legacy_derive_helpers,
+        missing_abi,
+        noop_method_call,
+        semicolon_in_expressions_from_macros,
+        rustdoc::broken_intra_doc_links,
+        rustdoc::invalid_codeblock_attributes,
+        rustdoc::invalid_html_tags,
+        rustdoc::missing_crate_level_docs,
+    )
+)]
 
 mod error;
 mod gf256;
@@ -197,7 +224,6 @@ mod shamir;
 #[cfg(test)]
 mod utils;
 
-pub use error::Error;
 pub use shamir::gen_shares;
 pub use shamir::unlock;
 pub use shamir::SsssConfig;

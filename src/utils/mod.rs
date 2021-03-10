@@ -8,18 +8,18 @@
 
 //! `ssss` testing utilities
 
-use crate::error::Result;
+use anyhow::{anyhow, Result};
 use rand::{rngs::ThreadRng, seq::IteratorRandom};
 use std::{collections::HashMap, hash::Hash};
 
 #[allow(dead_code)]
-crate fn print_shares(map: &HashMap<u8, Vec<u8>>) {
+pub(crate) fn print_shares(map: &HashMap<u8, Vec<u8>>) {
     for (k, v) in map {
         println!("Key: {}, Value: {:?}", k, v);
     }
 }
 
-crate fn remove_random_entry<T, U>(rng: &mut ThreadRng, map: &mut HashMap<T, U>)
+pub(crate) fn remove_random_entry<T, U>(rng: &mut ThreadRng, map: &mut HashMap<T, U>)
 where
     T: Clone + Hash + Eq,
 {
@@ -33,10 +33,10 @@ where
     map.clone().keys().choose(rng).cloned()
 }
 
-crate fn check_err_result<T>(result: Result<T>, expected: &str) -> Result<()> {
+pub(crate) fn check_err_result<T>(result: Result<T>, expected: &str) -> Result<()> {
     assert!(result.is_err());
     match result {
-        Ok(_) => Err("invalid error result".into()),
+        Ok(_) => Err(anyhow!("invalid error result")),
         Err(e) => {
             assert_eq!(format!("{}", e), expected);
             Ok(())

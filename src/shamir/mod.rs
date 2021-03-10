@@ -11,9 +11,13 @@
 mod utils;
 
 use crate::{
-    error::{Error, Result},
+    error::SsssError::{
+        EmptySecret, EmptyShare, EmptySharesMap, SecretLength, ShareLengthMismatch, SharesZero,
+        ThresholdToLow, ThresholdZero,
+    },
     gf256,
 };
+use anyhow::{anyhow, Result};
 use getset::Setters;
 use serde_derive::{Deserialize, Serialize};
 use std::{collections::HashMap, hash::BuildHasher};
@@ -48,10 +52,15 @@ impl Default for SsssConfig {
 
 impl SsssConfig {
     fn validate(&self) -> Result<()> {
-        if self.num_shares == 0 || self.threshold == 0 {
-            Err(Error::zero_p_or_t())
+        if self.num_shares == 0 {
+            Err(anyhow!(SharesZero))
+        } else if self.threshold == 0 {
+            Err(anyhow!(ThresholdZero))
         } else if self.threshold > self.num_shares {
-            Err(Error::invalid_threshold())
+            Err(anyhow!(ThresholdToLow {
+                threshold: self.threshold,
+                shares: self.num_shares
+            }))
         } else {
             Ok(())
         }
@@ -71,9 +80,10 @@ impl SsssConfig {
 ///
 /// # Example
 /// ```
-/// # use ssss::{gen_shares, unlock, Error, SsssConfig};
+/// # use anyhow::Result;
+/// # use ssss::{gen_shares, unlock, SsssConfig};
 /// #
-/// # pub fn main() -> Result<(), Error> {
+/// # pub fn main() -> Result<()> {
 /// // Generate 5 shares from the given secret
 /// let secret = "s3(r37".as_bytes();
 /// let mut shares = gen_shares(&SsssConfig::default(), secret)?;
@@ -118,9 +128,12 @@ pub fn gen_shares(config: &SsssConfig, secret: &[u8]) -> Result<HashMap<u8, Vec<
 
 fn validate_split_args(config: &SsssConfig, secret: &[u8]) -> Result<()> {
     if secret.is_empty() {
-        Err(Error::secret_empty())
+        Err(anyhow!(EmptySecret))
     } else if secret.len() > config.max_secret_size {
-        Err(Error::max_secret_len())
+        Err(anyhow!(SecretLength {
+            length: secret.len(),
+            max: config.max_secret_size
+        }))
     } else {
         config.validate()
     }
@@ -141,9 +154,10 @@ fn validate_split_args(config: &SsssConfig, secret: &[u8]) -> Result<()> {
 ///
 /// # Example
 /// ```
-/// # use ssss::{gen_shares, unlock, Error, SsssConfig};
+/// # use anyhow::Result;
+/// # use ssss::{gen_shares, unlock, SsssConfig};
 /// #
-/// # pub fn main() -> Result<(), Error> {
+/// # pub fn main() -> Result<()> {
 /// // Generate 5 shares from the given secret
 /// let secret = "s3(r37".as_bytes();
 /// let mut shares = gen_shares(&SsssConfig::default(), secret)?;
@@ -181,16 +195,16 @@ pub fn unlock<S: BuildHasher>(shares: &HashMap<u8, Vec<u8>, S>) -> Result<Vec<u8
 
 fn validate_join_args<S: BuildHasher>(shares: &HashMap<u8, Vec<u8>, S>) -> Result<usize> {
     if shares.is_empty() {
-        Err(Error::shares_map_empty())
+        Err(anyhow!(EmptySharesMap))
     } else {
         let lengths: Vec<usize> = shares.values().map(Vec::len).collect();
         let len = lengths[0];
         if len == 0 {
-            Err(Error::shares_empty())
+            Err(anyhow!(EmptyShare))
         } else if lengths.iter().all(|x| *x == len) {
             Ok(len)
         } else {
-            Err(Error::share_length_mismatch())
+            Err(anyhow!(ShareLengthMismatch))
         }
     }
 }
@@ -198,10 +212,8 @@ fn validate_join_args<S: BuildHasher>(shares: &HashMap<u8, Vec<u8>, S>) -> Resul
 #[cfg(test)]
 mod test {
     use super::{gen_shares, unlock, SsssConfig};
-    use crate::{
-        error::Result,
-        utils::{check_err_result, remove_random_entry},
-    };
+    use crate::utils::{check_err_result, remove_random_entry};
+    use anyhow::Result;
     use rand::thread_rng;
     use std::collections::{hash_map::RandomState, HashMap};
 
@@ -209,7 +221,7 @@ mod test {
     fn empty_secret() -> Result<()> {
         let config = SsssConfig::default();
         let result = gen_shares(&config, &vec![]);
-        check_err_result(result, "protocol: The given secret cannot be empty")
+        check_err_result(result, "The secret cannot be empty")
     }
 
     #[test]
@@ -219,7 +231,7 @@ mod test {
         let result = gen_shares(&config, "abcd".as_bytes());
         check_err_result(
             result,
-            "protocol: The maximum secret length has been exceeded",
+            "The secret length \'4\' is longer than the maximum allowed \'3\'",
         )
     }
 
@@ -228,10 +240,7 @@ mod test {
         let mut config = SsssConfig::default();
         let _ = config.set_num_shares(0);
         let result = gen_shares(&config, "a".as_bytes());
-        check_err_result(
-            result,
-            "protocol: The parts and threshold arguments cannot be 0",
-        )
+        check_err_result(result, "The number of shares must be greater than 0")
     }
 
     #[test]
@@ -239,10 +248,7 @@ mod test {
         let mut config = SsssConfig::default();
         let _ = config.set_threshold(0);
         let result = gen_shares(&config, "a".as_bytes());
-        check_err_result(
-            result,
-            "protocol: The parts and threshold arguments cannot be 0",
-        )
+        check_err_result(result, "The threshold must be greater than 0")
     }
 
     #[test]
@@ -252,7 +258,7 @@ mod test {
         let result = gen_shares(&mut config, "a".as_bytes());
         check_err_result(
             result,
-            "protocol: The threshold argument must be less than or equal to the parts argument",
+            "You have specified an invalid threshold.  It must be more than the number of shares. (6 <= 5)",
         )
     }
 
@@ -261,7 +267,7 @@ mod test {
         let s = RandomState::new();
         let hm = HashMap::with_hasher(s);
         let result = unlock(&hm);
-        check_err_result(result, "protocol: The given shares map cannot be empty")
+        check_err_result(result, "The shares map cannot be empty")
     }
 
     #[test]
@@ -271,7 +277,7 @@ mod test {
         let _ = bad_shares.insert(2, "ab".as_bytes().to_vec());
 
         let result = unlock(&bad_shares);
-        check_err_result(result, "protocol: The given shares have differing lengths")
+        check_err_result(result, "The shares must be the same length")
     }
 
     #[test]
@@ -281,7 +287,7 @@ mod test {
         let _ = bad_shares.insert(2, vec![]);
 
         let result = unlock(&bad_shares);
-        check_err_result(result, "protocol: The given shares cannot be empty")
+        check_err_result(result, "A share cannot be empty")
     }
 
     #[test]
