@@ -1,0 +1,40 @@
+name: fuzz
+on:
+  workflow_run:
+    workflows: ["CI"]
+    branches: [master]
+    types:
+      - completed
+
+jobs:
+  fuzz:
+    name: fuzz
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rust: nightly
+            other: x86_64-unknown-linux-gnu
+    steps:
+      - name: ✔️ Checkout ✔️
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: 💵 Cache 💵
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin/cargo-fuzz*
+          key: ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('**/Cargo.toml') }}
+      - name: 📅 Update 📅
+        run: rustup update --no-self-update ${{ matrix.rust }} && rustup default ${{ matrix.rust }}
+      - name: 💾 Install (cargo-tarpaulin) 💾
+        uses: actions-rs/install@v0.1
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          crate: cargo-fuzz
+          version: latest
+          use-tool-cache: true
+        continue-on-error: true

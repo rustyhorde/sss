@@ -18,6 +18,8 @@ use crate::{
     gf256,
 };
 use anyhow::{anyhow, Result};
+#[cfg(feature = "fuzz")]
+use arbitrary::Arbitrary;
 use getset::Setters;
 use serde_derive::{Deserialize, Serialize};
 use std::{collections::HashMap, hash::BuildHasher};
@@ -29,6 +31,7 @@ use utils::{filter_ok, inc_key, transpose};
 /// The default configuration will specify 5 shares with a
 /// threshold of 3.  The maximum secret size is [`u16::MAX`] (65536)
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, Setters)]
+#[cfg_attr(feature = "fuzz", derive(Arbitrary))]
 #[getset(set = "pub")]
 pub struct SsssConfig {
     /// The total shares to be generate from a secret
