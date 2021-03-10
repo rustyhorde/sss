@@ -12,12 +12,12 @@ use anyhow::{anyhow, Result};
 use rand::{rngs::ThreadRng, seq::IteratorRandom};
 use std::{collections::HashMap, hash::Hash};
 
-#[allow(dead_code)]
-pub(crate) fn print_shares(map: &HashMap<u8, Vec<u8>>) {
-    for (k, v) in map {
-        println!("Key: {}, Value: {:?}", k, v);
-    }
-}
+// #[allow(dead_code)]
+// pub(crate) fn print_shares(map: &HashMap<u8, Vec<u8>>) {
+//     for (k, v) in map {
+//         println!("Key: {}, Value: {:?}", k, v);
+//     }
+// }
 
 pub(crate) fn remove_random_entry<T, U>(rng: &mut ThreadRng, map: &mut HashMap<T, U>)
 where
