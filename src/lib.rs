@@ -223,6 +223,8 @@ mod gf256;
 mod shamir;
 #[cfg(test)]
 mod utils;
+#[cfg(all(feature = "arbitrary", not(feature = "fuzz")))]
+use arbitrary as _;
 
 pub use shamir::gen_shares;
 pub use shamir::unlock;
