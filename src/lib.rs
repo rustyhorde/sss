@@ -73,14 +73,14 @@
 //! # where
 //! #     T: Clone + Hash + Eq,
 //! # {
-//! # let _ = choose_idx(rng, map).and_then(|idx| map.remove(&idx));
+//! #     let _ = choose_idx(rng, map).and_then(|idx| map.remove(&idx));
 //! # }
 //! #
 //! # fn choose_idx<T, U>(rng: &mut ThreadRng, map: &HashMap<T, U>) -> Option<T>
 //! # where
 //! #     T: Clone,
 //! # {
-//! # map.clone().keys().choose(rng).cloned()
+//! #     map.clone().keys().choose(rng).cloned()
 //! # }
 //! ```
 //!

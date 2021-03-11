@@ -129,3 +129,108 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./cobertura.xml
+  fuzz-config:
+    name: fuzz-config
+    runs-on: ${{ matrix.os }}
+    needs: test
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-latest
+          rust: nightly
+          other: x86_64-unknown-linux-gnu
+    steps:
+      - name: ✔️ Checkout ✔️
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: 💵 Cache 💵
+        uses: actions/cache@v2
+        with:
+          path: |
+            fuzz/artifacts/config
+            fuzz/corpus/config
+            ~/.cargo/bin/cargo-fuzz*
+          key: ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('**/Cargo.toml') }}
+      - name: 📅 Update 📅
+        run: rustup update --no-self-update ${{ matrix.rust }} && rustup default ${{ matrix.rust }}
+      - name: 💾 Install (cargo-fuzz) 💾
+        uses: actions-rs/install@v0.1
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          crate: cargo-fuzz
+          version: latest
+          use-tool-cache: true
+        continue-on-error: true
+      - name: 🥝 Fuzz 🥝
+        run: cargo fuzz run config -- -max_total_time=300
+  fuzz-gen-shares:
+    name: fuzz-gen-shares
+    runs-on: ${{ matrix.os }}
+    needs: test
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-latest
+          rust: nightly
+          other: x86_64-unknown-linux-gnu
+    steps:
+      - name: ✔️ Checkout ✔️
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: 💵 Cache 💵
+        uses: actions/cache@v2
+        with:
+          path: |
+            fuzz/artifacts/gen_shares
+            fuzz/corpus/gen_shares
+            ~/.cargo/bin/cargo-fuzz*
+          key: ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('**/Cargo.toml') }}
+      - name: 📅 Update 📅
+        run: rustup update --no-self-update ${{ matrix.rust }} && rustup default ${{ matrix.rust }}
+      - name: 💾 Install (cargo-fuzz) 💾
+        uses: actions-rs/install@v0.1
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          crate: cargo-fuzz
+          version: latest
+          use-tool-cache: true
+        continue-on-error: true
+      - name: 🥝 Fuzz 🥝
+        run: cargo fuzz run gen_shares -- -max_total_time=300
+  fuzz-unlock:
+    name: fuzz-unlock
+    runs-on: ${{ matrix.os }}
+    needs: test
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-latest
+          rust: nightly
+          other: x86_64-unknown-linux-gnu
+    steps:
+      - name: ✔️ Checkout ✔️
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: 💵 Cache 💵
+        uses: actions/cache@v2
+        with:
+          path: |
+            fuzz/artifacts/unlock
+            fuzz/corpus/unlock
+            ~/.cargo/bin/cargo-fuzz*
+          key: ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('**/Cargo.toml') }}
+      - name: 📅 Update 📅
+        run: rustup update --no-self-update ${{ matrix.rust }} && rustup default ${{ matrix.rust }}
+      - name: 💾 Install (cargo-fuzz) 💾
+        uses: actions-rs/install@v0.1
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          crate: cargo-fuzz
+          version: latest
+          use-tool-cache: true
+        continue-on-error: true
+      - name: 🥝 Fuzz 🥝
+        run: cargo fuzz run unlock -- -max_total_time=300
