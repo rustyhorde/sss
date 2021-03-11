@@ -296,9 +296,11 @@ mod test {
     #[test]
     fn too_many_shares() -> Result<()> {
         let config = SsssConfig::default();
-        let secret = "a".as_bytes();
+        let secret = "abc".as_bytes();
         let mut shares = gen_shares(&config, secret)?;
-        let _ = shares.insert(6, vec![55]);
+        let _ = shares.insert(6, vec![55, 43, 22]);
+        let _ = shares.insert(7, vec![33, 23, 112]);
+        let _ = shares.insert(8, vec![121, 23, 76]);
         let unlocked = unlock(&shares)?;
         assert_ne!(unlocked, secret);
         Ok(())
