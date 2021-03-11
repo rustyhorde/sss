@@ -151,7 +151,9 @@ jobs:
             fuzz/artifacts/config
             fuzz/corpus/config
             ~/.cargo/bin/cargo-fuzz*
-          key: ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('**/Cargo.toml') }}
+          key: fuzz-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: |
+            fuzz-
       - name: 📅 Update 📅
         run: rustup update --no-self-update ${{ matrix.rust }} && rustup default ${{ matrix.rust }}
       - name: 💾 Install (cargo-fuzz) 💾
@@ -186,7 +188,9 @@ jobs:
             fuzz/artifacts/gen_shares
             fuzz/corpus/gen_shares
             ~/.cargo/bin/cargo-fuzz*
-          key: ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('**/Cargo.toml') }}
+          key: fuzz-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: |
+            fuzz-
       - name: 📅 Update 📅
         run: rustup update --no-self-update ${{ matrix.rust }} && rustup default ${{ matrix.rust }}
       - name: 💾 Install (cargo-fuzz) 💾
@@ -221,7 +225,9 @@ jobs:
             fuzz/artifacts/unlock
             fuzz/corpus/unlock
             ~/.cargo/bin/cargo-fuzz*
-          key: ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('**/Cargo.toml') }}
+          key: fuzz-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: |
+            fuzz-
       - name: 📅 Update 📅
         run: rustup update --no-self-update ${{ matrix.rust }} && rustup default ${{ matrix.rust }}
       - name: 💾 Install (cargo-fuzz) 💾
