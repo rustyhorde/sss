@@ -84,6 +84,7 @@
 //! # }
 //! ```
 //!
+// rustc lints
 #![deny(
     absolute_paths_not_starting_with_crate,
     anonymous_parameters,
@@ -101,7 +102,6 @@
     dead_code,
     deprecated,
     deprecated_in_future,
-    // disjoint_capture_drop_reorder,
     drop_bounds,
     elided_lifetimes_in_paths,
     ellipsis_inclusive_range_patterns,
@@ -121,6 +121,7 @@
     late_bound_lifetime_arguments,
     macro_use_extern_crate,
     meta_variable_misuse,
+    missing_abi,
     missing_copy_implementations,
     missing_debug_implementations,
     missing_docs,
@@ -141,7 +142,7 @@
     proc_macro_derive_resolution_fallback,
     redundant_semicolons,
     renamed_and_removed_lints,
-    safe_packed_borrows,
+    semicolon_in_expressions_from_macros,
     single_use_lifetimes,
     stable_features,
     temporary_cstring_as_ptr,
@@ -160,7 +161,6 @@
     unreachable_patterns,
     unreachable_pub,
     unsafe_code,
-    // unsafe_op_in_unsafe_fn,
     unstable_features,
     unstable_name_collisions,
     unsupported_naked_functions,
@@ -187,36 +187,58 @@
     unused_variables,
     variant_size_differences,
     where_clauses_object_safety,
-    while_true,
+    while_true
 )]
-// clippy lints
-#![deny(clippy::all, clippy::pedantic)]
-// stable/beta only lints
+// nightly only lints
 #![cfg_attr(
-    not(nightly_lints),
+    nightly_lints,
+    deny(disjoint_capture_drop_reorder, or_patterns_back_compat)
+)]
+// nightly or beta only lints
+#![cfg_attr(
+    any(beta_lints, nightly_lints),
+    deny(
+        legacy_derive_helpers,
+        noop_method_call,
+        proc_macro_back_compat,
+        unsafe_op_in_unsafe_fn,
+        unaligned_references,
+    )
+)]
+// beta or stable only lints
+#![cfg_attr(any(beta_lints, stable_lints), deny(safe_packed_borrows))]
+// stable only lints
+#![cfg_attr(
+    stable_lints,
     deny(
         broken_intra_doc_links,
         invalid_codeblock_attributes,
         invalid_html_tags,
         missing_crate_level_docs,
+        missing_doc_code_examples,
+        non_autolinks,
+        // private_doc_tests,
+        private_intra_doc_links,
     )
 )]
-// nightly only lints
+// clippy lints
+#![deny(clippy::all, clippy::pedantic)]
+#![allow(clippy::clippy::default_trait_access)]
+// rustdoc lints
 #![cfg_attr(
-    nightly_lints,
+    any(nightly_lints, beta_lints),
     deny(
-        // disjoint_capture_drop_reorder,
-        ineffective_unstable_trait_impl,
-        legacy_derive_helpers,
-        missing_abi,
-        noop_method_call,
-        semicolon_in_expressions_from_macros,
         rustdoc::broken_intra_doc_links,
         rustdoc::invalid_codeblock_attributes,
         rustdoc::invalid_html_tags,
         rustdoc::missing_crate_level_docs,
+        rustdoc::missing_doc_code_examples,
+        // rustdoc::private_doc_tests,
+        rustdoc::private_intra_doc_links,
     )
 )]
+#![cfg_attr(beta_lints, deny(rustdoc::non_autolinks))]
+#![cfg_attr(nightly_lints, deny(rustdoc::bare_urls))]
 
 mod error;
 mod gf256;
