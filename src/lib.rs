@@ -219,7 +219,7 @@
 )]
 // clippy lints
 #![deny(clippy::all, clippy::pedantic)]
-#![allow(clippy::clippy::default_trait_access)]
+#![allow(clippy::default_trait_access)]
 // rustdoc lints
 #![cfg_attr(
     any(nightly_lints, beta_lints),

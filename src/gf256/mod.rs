@@ -33,7 +33,7 @@ pub(crate) fn eval(p: &[u8], x: u8) -> u8 {
     let mut result = 0;
 
     for i in (0..p.len()).rev() {
-        result = add(mul(result, x), p[i])
+        result = add(mul(result, x), p[i]);
     }
     result
 }
