@@ -130,7 +130,7 @@
     no_mangle_generic_items,
     non_ascii_idents,
     non_camel_case_types,
-    non_fmt_panic,
+    non_fmt_panics,
     non_shorthand_field_patterns,
     non_snake_case,
     non_upper_case_globals,
@@ -163,7 +163,6 @@
     unsafe_code,
     unstable_features,
     unstable_name_collisions,
-    unsupported_naked_functions,
     unused_allocation,
     unused_assignments,
     unused_attributes,
@@ -190,10 +189,7 @@
     while_true
 )]
 // nightly only lints
-#![cfg_attr(
-    nightly_lints,
-    deny(disjoint_capture_drop_reorder, or_patterns_back_compat)
-)]
+#![cfg_attr(nightly_lints, deny(rust_2021_incompatible_or_patterns))]
 // nightly or beta only lints
 #![cfg_attr(
     any(beta_lints, nightly_lints),
@@ -206,19 +202,19 @@
     )
 )]
 // beta or stable only lints
-#![cfg_attr(any(beta_lints, stable_lints), deny(safe_packed_borrows))]
+#![cfg_attr(any(beta_lints, stable_lints), deny(unaligned_references))]
 // stable only lints
 #![cfg_attr(
     stable_lints,
     deny(
-        broken_intra_doc_links,
-        invalid_codeblock_attributes,
-        invalid_html_tags,
-        missing_crate_level_docs,
-        missing_doc_code_examples,
-        non_autolinks,
+        rustdoc::broken_intra_doc_links,
+        rustdoc::invalid_codeblock_attributes,
+        rustdoc::invalid_html_tags,
+        rustdoc::missing_crate_level_docs,
+        rustdoc::missing_doc_code_examples,
+        rustdoc::bare_urls,
         // private_doc_tests,
-        private_intra_doc_links,
+        rustdoc::private_intra_doc_links,
     )
 )]
 // clippy lints
@@ -237,7 +233,7 @@
         rustdoc::private_intra_doc_links,
     )
 )]
-#![cfg_attr(beta_lints, deny(rustdoc::non_autolinks))]
+#![cfg_attr(beta_lints, deny(rustdoc::bare_urls))]
 #![cfg_attr(nightly_lints, deny(rustdoc::bare_urls))]
 
 mod error;
