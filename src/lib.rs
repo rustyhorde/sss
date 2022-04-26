@@ -5,85 +5,7 @@
 // license <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
 // option. All files in the project carrying such notice may not be copied,
 // modified, or distributed except according to those terms.
-
-//! # `ssss`
-//! A [Shamir's Secret Sharing Scheme](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing) implementation in Rust
-//!
-//! To quote the Wikipedia article linked above:
-//!
-//! >Shamir's Secret Sharing is used to secure a secret in a distributed way, most often to secure other encryption keys.
-//! The secret is split into multiple parts, called shares. These shares are used to reconstruct the original secret.
-//!
-//! >To unlock the secret via Shamir's secret sharing, you need a minimum number of shares. This is called the threshold,
-//! and is used to denote the minimum number of shares needed to unlock the secret. Let us walk through an example:
-//!
-//! >>Problem: Company XYZ needs to secure their vault's passcode. They could use something standard, such as AES, but what
-//! if the holder of the key is unavailable or dies? What if the key is compromised via a malicious hacker or the holder
-//! of the key turns rogue, and uses their power over the vault to their benefit?
-//!
-//! >This is where ssss comes in. It can be used to encrypt the vault's passcode and generate a certain number of shares,
-//! where a certain number of shares can be allocated to each executive within Company XYZ. Now, only if they pool their
-//! shares can they unlock the vault. The threshold can be appropriately set for the number of executives, so the vault
-//! is always able to be accessed by the authorized individuals. Should a share or two fall into the wrong hands,
-//! they couldn't open the passcode unless the other executives cooperated.
-//!
-//! # Example
-//!
-//! ```
-//! # use anyhow::Result;
-//! # use rand::{thread_rng, rngs::ThreadRng, seq::IteratorRandom};
-//! # use ssss::{unlock, gen_shares, SsssConfig};
-//! # use std::{collections::HashMap, hash::Hash};
-//! #
-//! # fn main() -> Result<()> {
-//! let secret = "correct horse battery staple".as_bytes();
-//! let config = SsssConfig::default();
-//!
-//! // Generate 5 shares to be distributed, requiring a minimum of 3 later
-//! // to unlock the secret
-//! let mut shares = gen_shares(&config, &secret)?;
-//!
-//! // Check that all 5 shares can unlock the secret
-//! assert_eq!(shares.len(), 5);
-//! assert_eq!(unlock(&shares)?, secret);
-//!
-//! // Remove a random share from `shares` and check that 4 shares can unlock
-//! // the secret
-//! let mut rng = thread_rng();
-//! remove_random_entry(&mut rng, &mut shares);
-//! assert_eq!(shares.len(), 4);
-//! assert_eq!(unlock(&shares)?, secret);
-//!
-//! // Remove another random share from `shares` and check that 3 shares can unlock
-//! // the secret
-//! remove_random_entry(&mut rng, &mut shares);
-//! assert_eq!(shares.len(), 3);
-//! assert_eq!(unlock(&shares)?, secret);
-//!
-//! // Remove another random share from `shares` and check that 2 shares *CANNOT*
-//! // unlock the secret
-//! remove_random_entry(&mut rng, &mut shares);
-//! assert_eq!(shares.len(), 2);
-//! assert_ne!(unlock(&shares)?, secret);
-//! #
-//! # Ok(())
-//! # }
-//! #
-//! # fn remove_random_entry<T, U>(rng: &mut ThreadRng, map: &mut HashMap<T, U>)
-//! # where
-//! #     T: Clone + Hash + Eq,
-//! # {
-//! #     let _ = choose_idx(rng, map).and_then(|idx| map.remove(&idx));
-//! # }
-//! #
-//! # fn choose_idx<T, U>(rng: &mut ThreadRng, map: &HashMap<T, U>) -> Option<T>
-//! # where
-//! #     T: Clone,
-//! # {
-//! #     map.clone().keys().choose(rng).cloned()
-//! # }
-//! ```
-//!
+#![doc = include_str!("../README.md")]
 // rustc lints
 #![deny(
     absolute_paths_not_starting_with_crate,
@@ -130,7 +52,7 @@
     no_mangle_generic_items,
     non_ascii_idents,
     non_camel_case_types,
-    non_fmt_panic,
+    non_fmt_panics,
     non_shorthand_field_patterns,
     non_snake_case,
     non_upper_case_globals,
@@ -163,7 +85,6 @@
     unsafe_code,
     unstable_features,
     unstable_name_collisions,
-    unsupported_naked_functions,
     unused_allocation,
     unused_assignments,
     unused_attributes,
@@ -190,10 +111,7 @@
     while_true
 )]
 // nightly only lints
-#![cfg_attr(
-    nightly_lints,
-    deny(disjoint_capture_drop_reorder, or_patterns_back_compat)
-)]
+#![cfg_attr(nightly_lints, deny(rust_2021_incompatible_or_patterns))]
 // nightly or beta only lints
 #![cfg_attr(
     any(beta_lints, nightly_lints),
@@ -206,24 +124,24 @@
     )
 )]
 // beta or stable only lints
-#![cfg_attr(any(beta_lints, stable_lints), deny(safe_packed_borrows))]
+#![cfg_attr(any(beta_lints, stable_lints), deny(unaligned_references))]
 // stable only lints
 #![cfg_attr(
     stable_lints,
     deny(
-        broken_intra_doc_links,
-        invalid_codeblock_attributes,
-        invalid_html_tags,
-        missing_crate_level_docs,
-        missing_doc_code_examples,
-        non_autolinks,
+        rustdoc::broken_intra_doc_links,
+        rustdoc::invalid_codeblock_attributes,
+        rustdoc::invalid_html_tags,
+        rustdoc::missing_crate_level_docs,
+        rustdoc::missing_doc_code_examples,
+        rustdoc::bare_urls,
         // private_doc_tests,
-        private_intra_doc_links,
+        rustdoc::private_intra_doc_links,
     )
 )]
 // clippy lints
 #![deny(clippy::all, clippy::pedantic)]
-#![allow(clippy::clippy::default_trait_access)]
+#![allow(clippy::default_trait_access)]
 // rustdoc lints
 #![cfg_attr(
     any(nightly_lints, beta_lints),
@@ -237,7 +155,7 @@
         rustdoc::private_intra_doc_links,
     )
 )]
-#![cfg_attr(beta_lints, deny(rustdoc::non_autolinks))]
+#![cfg_attr(beta_lints, deny(rustdoc::bare_urls))]
 #![cfg_attr(nightly_lints, deny(rustdoc::bare_urls))]
 
 mod error;
