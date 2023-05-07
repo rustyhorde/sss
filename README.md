@@ -22,13 +22,7 @@ they couldn't open the passcode unless the other executives cooperated.
 
 # Example
 
-```rust
-# use anyhow::Result;
-# use rand::{thread_rng, rngs::ThreadRng, seq::IteratorRandom};
-# use ssss::{unlock, gen_shares, SsssConfig};
-# use std::{collections::HashMap, hash::Hash};
-#
-# fn main() -> Result<()> {
+````rust
 let secret = "correct horse battery staple".as_bytes();
 let config = SsssConfig::default();
 
@@ -58,21 +52,3 @@ assert_eq!(unlock(&shares)?, secret);
 remove_random_entry(&mut rng, &mut shares);
 assert_eq!(shares.len(), 2);
 assert_ne!(unlock(&shares)?, secret);
-#
-# Ok(())
-# }
-#
-# fn remove_random_entry<T, U>(rng: &mut ThreadRng, map: &mut HashMap<T, U>)
-# where
-#     T: Clone + Hash + Eq,
-# {
-#     let _ = choose_idx(rng, map).and_then(|idx| map.remove(&idx));
-# }
-#
-# fn choose_idx<T, U>(rng: &mut ThreadRng, map: &HashMap<T, U>) -> Option<T>
-# where
-#     T: Clone,
-# {
-#     map.clone().keys().choose(rng).cloned()
-# }
-```

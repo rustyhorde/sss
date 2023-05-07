@@ -12,25 +12,18 @@ use anyhow::{anyhow, Result};
 use rand::{rngs::ThreadRng, seq::IteratorRandom};
 use std::{collections::HashMap, hash::Hash};
 
-// #[allow(dead_code)]
-// pub(crate) fn print_shares(map: &HashMap<u8, Vec<u8>>) {
-//     for (k, v) in map {
-//         println!("Key: {}, Value: {:?}", k, v);
-//     }
-// }
-
 pub(crate) fn remove_random_entry<T, U>(rng: &mut ThreadRng, map: &mut HashMap<T, U>)
 where
     T: Clone + Hash + Eq,
 {
-    let _ = choose_idx(rng, map).and_then(|idx| map.remove(&idx));
+    let _unused = choose_idx(rng, map).and_then(|idx| map.remove(&idx));
 }
 
 fn choose_idx<T, U>(rng: &mut ThreadRng, map: &HashMap<T, U>) -> Option<T>
 where
     T: Clone,
 {
-    map.clone().keys().choose(rng).cloned()
+    map.keys().choose(rng).cloned()
 }
 
 pub(crate) fn check_err_result<T>(result: Result<T>, expected: &str) -> Result<()> {
@@ -38,7 +31,7 @@ pub(crate) fn check_err_result<T>(result: Result<T>, expected: &str) -> Result<(
     match result {
         Ok(_) => Err(anyhow!("invalid error result")),
         Err(e) => {
-            assert_eq!(format!("{}", e), expected);
+            assert_eq!(format!("{e}"), expected);
             Ok(())
         }
     }

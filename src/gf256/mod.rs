@@ -169,15 +169,15 @@ mod test {
 
     #[test]
     fn degree_works() {
-        assert_eq!(degree(&vec![1, 2]), 1);
-        assert_eq!(degree(&vec![1, 2, 0]), 1);
-        assert_eq!(degree(&vec![1, 2, 3]), 2);
-        assert_eq!(degree(&vec![4]), 0);
+        assert_eq!(degree(&[1, 2]), 1);
+        assert_eq!(degree(&[1, 2, 0]), 1);
+        assert_eq!(degree(&[1, 2, 3]), 2);
+        assert_eq!(degree(&[4]), 0);
     }
 
     #[test]
     fn eval_works() {
-        assert_eq!(eval(&vec![1, 0, 2, 3], 2), 17);
+        assert_eq!(eval(&[1, 0, 2, 3], 2), 17);
     }
 
     #[test]
@@ -190,14 +190,8 @@ mod test {
 
     #[test]
     fn interpolate_works() {
-        assert_eq!(interpolate(&vec![vec![1, 1], vec![2, 2], vec![3, 3]]), 0);
-        assert_eq!(
-            interpolate(&vec![vec![1, 80], vec![2, 90], vec![3, 20]]),
-            30
-        );
-        assert_eq!(
-            interpolate(&vec![vec![1, 43], vec![2, 22], vec![3, 86]]),
-            107
-        );
+        assert_eq!(interpolate(&[vec![1, 1], vec![2, 2], vec![3, 3]]), 0);
+        assert_eq!(interpolate(&[vec![1, 80], vec![2, 90], vec![3, 20]]), 30);
+        assert_eq!(interpolate(&[vec![1, 43], vec![2, 22], vec![3, 86]]), 107);
     }
 }

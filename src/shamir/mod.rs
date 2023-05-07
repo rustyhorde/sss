@@ -21,7 +21,7 @@ use anyhow::{anyhow, Result};
 #[cfg(feature = "fuzz")]
 use arbitrary::Arbitrary;
 use getset::Setters;
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, hash::BuildHasher};
 use utils::{filter_ok, inc_key, transpose};
 
@@ -223,7 +223,7 @@ mod test {
     #[test]
     fn empty_secret() -> Result<()> {
         let config = SsssConfig::default();
-        let result = gen_shares(&config, &vec![]);
+        let result = gen_shares(&config, &[]);
         check_err_result(result, "The secret cannot be empty")
     }
 
@@ -258,7 +258,7 @@ mod test {
     fn threshold_greater_than_parts() -> Result<()> {
         let mut config = SsssConfig::default();
         let _ = config.set_threshold(6);
-        let result = gen_shares(&mut config, "a".as_bytes());
+        let result = gen_shares(&config, "a".as_bytes());
         check_err_result(
             result,
             "You have specified an invalid threshold.  It must be more than the number of shares. (6 <= 5)",
@@ -276,8 +276,8 @@ mod test {
     #[test]
     fn shares_of_differing_lengths() -> Result<()> {
         let mut bad_shares: HashMap<u8, Vec<u8>, RandomState> = HashMap::default();
-        let _ = bad_shares.insert(1, "abc".as_bytes().to_vec());
-        let _ = bad_shares.insert(2, "ab".as_bytes().to_vec());
+        let _unused = bad_shares.insert(1, "abc".as_bytes().to_vec());
+        let _unused = bad_shares.insert(2, "ab".as_bytes().to_vec());
 
         let result = unlock(&bad_shares);
         check_err_result(result, "The shares must be the same length")
@@ -286,8 +286,8 @@ mod test {
     #[test]
     fn empty_shares() -> Result<()> {
         let mut bad_shares: HashMap<u8, Vec<u8>, RandomState> = HashMap::default();
-        let _ = bad_shares.insert(1, vec![]);
-        let _ = bad_shares.insert(2, vec![]);
+        let _unused = bad_shares.insert(1, vec![]);
+        let _unused = bad_shares.insert(2, vec![]);
 
         let result = unlock(&bad_shares);
         check_err_result(result, "A share cannot be empty")
@@ -298,9 +298,9 @@ mod test {
         let config = SsssConfig::default();
         let secret = "abc".as_bytes();
         let mut shares = gen_shares(&config, secret)?;
-        let _ = shares.insert(6, vec![55, 43, 22]);
-        let _ = shares.insert(7, vec![33, 23, 112]);
-        let _ = shares.insert(8, vec![121, 23, 76]);
+        let _unused = shares.insert(6, vec![55, 43, 22]);
+        let _unused = shares.insert(7, vec![33, 23, 112]);
+        let _unused = shares.insert(8, vec![121, 23, 76]);
         let unlocked = unlock(&shares)?;
         assert_ne!(unlocked, secret);
         Ok(())
@@ -310,10 +310,10 @@ mod test {
     fn split_and_join() -> Result<()> {
         let secret = "correct horse battery staple".as_bytes();
         let config = SsssConfig::default();
-        let shares = gen_shares(&config, &secret)?;
+        let shares = gen_shares(&config, secret)?;
 
         // 5 parts should work
-        let mut parts = shares.clone();
+        let mut parts = shares;
         assert_eq!(parts.len(), 5);
         assert_eq!(unlock(&parts)?, secret);
 
