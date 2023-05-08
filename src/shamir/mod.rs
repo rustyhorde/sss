@@ -17,13 +17,13 @@ use crate::{
     },
     gf256,
 };
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 #[cfg(feature = "fuzz")]
 use arbitrary::Arbitrary;
 use getset::Setters;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, hash::BuildHasher};
-use utils::{filter_ok, inc_key, transpose};
+use utils::{inc_key, transpose};
 
 /// Configuration used to drive the [`gen_shares`] function.
 ///
@@ -56,14 +56,15 @@ impl Default for SsssConfig {
 impl SsssConfig {
     fn validate(&self) -> Result<()> {
         if self.num_shares == 0 {
-            Err(anyhow!(SharesZero))
+            Err(SharesZero.into())
         } else if self.threshold == 0 {
-            Err(anyhow!(ThresholdZero))
+            Err(ThresholdZero.into())
         } else if self.threshold > self.num_shares {
-            Err(anyhow!(ThresholdToLow {
+            Err(ThresholdToLow {
                 threshold: self.threshold,
-                shares: self.num_shares
-            }))
+                shares: self.num_shares,
+            }
+            .into())
         } else {
             Ok(())
         }
@@ -88,22 +89,14 @@ impl SsssConfig {
 /// #
 /// # pub fn main() -> Result<()> {
 /// // Generate 5 shares from the given secret
-/// let secret = "s3(r37".as_bytes();
-/// let mut shares = gen_shares(&SsssConfig::default(), secret)?;
+/// let secret = "correct horse battery staple".as_bytes();
+/// let config = SsssConfig::default();
+///
+/// // Generate 5 shares to be distributed, requiring a minimum of 3 later
+/// // to unlock the secret
+/// let mut shares = gen_shares(&config, &secret)?;
 /// assert_eq!(shares.len(), 5);
 ///
-/// // Remove a couple shares to show 3 will unlock the secret (4 or 5 shares will as well)
-/// let _ = shares.remove(&2);
-/// let _ = shares.remove(&5);
-/// assert_eq!(shares.len(), 3);
-/// let unlocked_secret = unlock(&shares)?;
-/// assert_eq!(secret, unlocked_secret);
-///
-/// // Remove one more to show 2 shares will not unlock the secret
-/// let _ = shares.remove(&1);
-/// assert_eq!(shares.len(), 2);
-/// let who_knows = unlock(&shares)?;
-/// assert_ne!(secret, who_knows);
 /// # Ok(())
 /// # }
 pub fn gen_shares(config: &SsssConfig, secret: &[u8]) -> Result<HashMap<u8, Vec<u8>>> {
@@ -125,18 +118,19 @@ pub fn gen_shares(config: &SsssConfig, secret: &[u8]) -> Result<HashMap<u8, Vec<
         .cloned()
         .enumerate()
         .map(inc_key)
-        .filter_map(filter_ok)
+        .filter_map(Result::ok)
         .collect())
 }
 
 fn validate_split_args(config: &SsssConfig, secret: &[u8]) -> Result<()> {
     if secret.is_empty() {
-        Err(anyhow!(EmptySecret))
+        Err(EmptySecret.into())
     } else if secret.len() > config.max_secret_size {
-        Err(anyhow!(SecretLength {
+        Err(SecretLength {
             length: secret.len(),
-            max: config.max_secret_size
-        }))
+            max: config.max_secret_size,
+        }
+        .into())
     } else {
         config.validate()
     }
@@ -158,26 +152,40 @@ fn validate_split_args(config: &SsssConfig, secret: &[u8]) -> Result<()> {
 /// # Example
 /// ```
 /// # use anyhow::Result;
-/// # use ssss::{gen_shares, unlock, SsssConfig};
+/// # use rand::{thread_rng, rngs::ThreadRng};
+/// # use ssss::{gen_shares, unlock, remove_random_entry, SsssConfig};
 /// #
 /// # pub fn main() -> Result<()> {
 /// // Generate 5 shares from the given secret
-/// let secret = "s3(r37".as_bytes();
-/// let mut shares = gen_shares(&SsssConfig::default(), secret)?;
+/// let secret = "correct horse battery staple".as_bytes();
+/// let config = SsssConfig::default();
+///
+/// // Generate 5 shares to be distributed, requiring a minimum of 3 later
+/// // to unlock the secret
+/// let mut shares = gen_shares(&config, &secret)?;
+///
+/// // Check that all 5 shares can unlock the secret
 /// assert_eq!(shares.len(), 5);
+/// assert_eq!(unlock(&shares)?, secret);
 ///
-/// // Remove a couple shares to show 3 will unlock the secret (4 or 5 shares will as well)
-/// let _ = shares.remove(&2);
-/// let _ = shares.remove(&5);
+/// // Remove a random share from `shares` and check that 4 shares can unlock
+/// // the secret
+/// let mut rng = thread_rng();
+/// remove_random_entry(&mut rng, &mut shares);
+/// assert_eq!(shares.len(), 4);
+/// assert_eq!(unlock(&shares)?, secret);
+///
+/// // Remove another random share from `shares` and check that 3 shares can unlock
+/// // the secret
+/// remove_random_entry(&mut rng, &mut shares);
 /// assert_eq!(shares.len(), 3);
-/// let unlocked_secret = unlock(&shares)?;
-/// assert_eq!(secret, unlocked_secret);
+/// assert_eq!(unlock(&shares)?, secret);
 ///
-/// // Remove one more to show 2 shares will not unlock the secret
-/// let _ = shares.remove(&1);
+/// // Remove another random share from `shares` and check that 2 shares *CANNOT*
+/// // unlock the secret
+/// remove_random_entry(&mut rng, &mut shares);
 /// assert_eq!(shares.len(), 2);
-/// let who_knows = unlock(&shares)?;
-/// assert_ne!(secret, who_knows);
+/// assert_ne!(unlock(&shares)?, secret);
 /// # Ok(())
 /// # }
 pub fn unlock<S: BuildHasher>(shares: &HashMap<u8, Vec<u8>, S>) -> Result<Vec<u8>> {
@@ -198,16 +206,16 @@ pub fn unlock<S: BuildHasher>(shares: &HashMap<u8, Vec<u8>, S>) -> Result<Vec<u8
 
 fn validate_join_args<S: BuildHasher>(shares: &HashMap<u8, Vec<u8>, S>) -> Result<usize> {
     if shares.is_empty() {
-        Err(anyhow!(EmptySharesMap))
+        Err(EmptySharesMap.into())
     } else {
         let lengths: Vec<usize> = shares.values().map(Vec::len).collect();
         let len = lengths[0];
         if len == 0 {
-            Err(anyhow!(EmptyShare))
+            Err(EmptyShare.into())
         } else if lengths.iter().all(|x| *x == len) {
             Ok(len)
         } else {
-            Err(anyhow!(ShareLengthMismatch))
+            Err(ShareLengthMismatch.into())
         }
     }
 }
@@ -261,7 +269,7 @@ mod test {
         let result = gen_shares(&config, "a".as_bytes());
         check_err_result(
             result,
-            "You have specified an invalid threshold.  It must be more than the number of shares. (6 <= 5)",
+            "You have specified an invalid threshold.  It must be less than or equal to the number of shares. (6 is not <= 5)",
         )
     }
 

@@ -15,10 +15,6 @@ pub(crate) fn inc_key(tuple: (usize, Vec<u8>)) -> Result<(u8, Vec<u8>)> {
     Ok((u8::try_from(tuple.0 + 1)?, tuple.1))
 }
 
-pub(crate) fn filter_ok<T>(result: Result<T>) -> Option<T> {
-    result.ok()
-}
-
 pub(crate) fn transpose<T>(v: &[Vec<T>]) -> Vec<Vec<T>>
 where
     T: Clone,

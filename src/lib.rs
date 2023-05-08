@@ -32,9 +32,8 @@
 //!
 //! ```rust
 //! # use anyhow::Result;
-//! # use rand::{thread_rng, rngs::ThreadRng, seq::IteratorRandom};
-//! # use ssss::{unlock, gen_shares, SsssConfig};
-//! # use std::{collections::HashMap, hash::Hash};
+//! # use rand::{thread_rng, rngs::ThreadRng};
+//! # use ssss::{unlock, gen_shares, remove_random_entry, SsssConfig};
 //! #
 //! # fn main() -> Result<()> {
 //! let secret = "correct horse battery staple".as_bytes();
@@ -68,20 +67,6 @@
 //! assert_ne!(unlock(&shares)?, secret);
 //! #
 //! # Ok(())
-//! # }
-//! #
-//! # fn remove_random_entry<T, U>(rng: &mut ThreadRng, map: &mut HashMap<T, U>)
-//! # where
-//! #     T: Clone + Hash + Eq,
-//! # {
-//! #     let _ = choose_idx(rng, map).and_then(|idx| map.remove(&idx));
-//! # }
-//! #
-//! # fn choose_idx<T, U>(rng: &mut ThreadRng, map: &HashMap<T, U>) -> Option<T>
-//! # where
-//! #     T: Clone,
-//! # {
-//! #     map.clone().keys().choose(rng).cloned()
 //! # }
 //!
 
@@ -289,10 +274,9 @@ use arbitrary as _;
 mod error;
 mod gf256;
 mod shamir;
+mod utils;
 
 pub use shamir::gen_shares;
 pub use shamir::unlock;
 pub use shamir::SsssConfig;
-
-#[cfg(test)]
-mod utils;
+pub use utils::remove_random_entry;

@@ -8,24 +8,30 @@
 
 //! `ssss` testing utilities
 
+#[cfg(test)]
 use anyhow::{anyhow, Result};
 use rand::{rngs::ThreadRng, seq::IteratorRandom};
-use std::{collections::HashMap, hash::Hash};
+use std::{
+    collections::HashMap,
+    hash::{BuildHasher, Hash},
+};
 
-pub(crate) fn remove_random_entry<T, U>(rng: &mut ThreadRng, map: &mut HashMap<T, U>)
+#[doc(hidden)]
+pub fn remove_random_entry<T, U, S: BuildHasher>(rng: &mut ThreadRng, map: &mut HashMap<T, U, S>)
 where
     T: Clone + Hash + Eq,
 {
     let _unused = choose_idx(rng, map).and_then(|idx| map.remove(&idx));
 }
 
-fn choose_idx<T, U>(rng: &mut ThreadRng, map: &HashMap<T, U>) -> Option<T>
+fn choose_idx<T, U, S: BuildHasher>(rng: &mut ThreadRng, map: &HashMap<T, U, S>) -> Option<T>
 where
     T: Clone,
 {
     map.keys().choose(rng).cloned()
 }
 
+#[cfg(test)]
 pub(crate) fn check_err_result<T>(result: Result<T>, expected: &str) -> Result<()> {
     assert!(result.is_err());
     match result {
