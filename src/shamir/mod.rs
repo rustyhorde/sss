@@ -248,7 +248,7 @@ mod test {
     #[test]
     fn max_secret() -> Result<()> {
         let mut config = SsssConfig::default();
-        let _ = config.set_max_secret_size(3);
+        _ = config.set_max_secret_size(3);
         let result = gen_shares(&config, "abcd".as_bytes());
         check_err_result(
             result,
@@ -259,7 +259,7 @@ mod test {
     #[test]
     fn zero_parts() -> Result<()> {
         let mut config = SsssConfig::default();
-        let _ = config.set_num_shares(0);
+        _ = config.set_num_shares(0);
         let result = gen_shares(&config, "a".as_bytes());
         check_err_result(result, "The number of shares must be greater than 0")
     }
@@ -267,7 +267,7 @@ mod test {
     #[test]
     fn zero_threshold() -> Result<()> {
         let mut config = SsssConfig::default();
-        let _ = config.set_threshold(0);
+        _ = config.set_threshold(0);
         let result = gen_shares(&config, "a".as_bytes());
         check_err_result(result, "The threshold must be greater than 0")
     }
@@ -275,7 +275,7 @@ mod test {
     #[test]
     fn threshold_greater_than_parts() -> Result<()> {
         let mut config = SsssConfig::default();
-        let _ = config.set_threshold(6);
+        _ = config.set_threshold(6);
         let result = gen_shares(&config, "a".as_bytes());
         check_err_result(
             result,
