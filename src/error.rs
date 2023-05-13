@@ -31,4 +31,8 @@ pub(crate) enum SsssError {
     EmptyShare,
     #[error("The shares must be the same length")]
     ShareLengthMismatch,
+    #[error("Base62 docoding bad character: {c}")]
+    BadCharacter { c: char },
+    #[error("Invalid share format")]
+    InvalidShareFormat,
 }

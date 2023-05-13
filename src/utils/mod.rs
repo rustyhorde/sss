@@ -11,24 +11,16 @@
 #[cfg(test)]
 use anyhow::{anyhow, Result};
 use rand::{rngs::ThreadRng, seq::IteratorRandom};
-use std::{
-    collections::HashMap,
-    hash::{BuildHasher, Hash},
-};
 
 #[doc(hidden)]
-pub fn remove_random_entry<T, U, S: BuildHasher>(rng: &mut ThreadRng, map: &mut HashMap<T, U, S>)
-where
-    T: Clone + Hash + Eq,
-{
-    let _unused = choose_idx(rng, map).and_then(|idx| map.remove(&idx));
+pub fn remove_random_entry<T>(rng: &mut ThreadRng, vec: &mut Vec<T>) {
+    let _unused = (0..vec.len())
+        .choose(rng)
+        .map(|idx| Some(remove_idx(idx, vec)));
 }
 
-fn choose_idx<T, U, S: BuildHasher>(rng: &mut ThreadRng, map: &HashMap<T, U, S>) -> Option<T>
-where
-    T: Clone,
-{
-    map.keys().choose(rng).cloned()
+fn remove_idx<T>(idx: usize, vec: &mut Vec<T>) -> T {
+    vec.remove(idx)
 }
 
 #[cfg(test)]

@@ -22,8 +22,10 @@ use anyhow::Result;
 use arbitrary::Arbitrary;
 use getset::Setters;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, hash::BuildHasher};
-use utils::{inc_key, transpose};
+use std::collections::HashMap;
+use utils::{encode_share, transpose};
+
+use self::utils::decode_share;
 
 /// Configuration used to drive the [`gen_shares`] function.
 ///
@@ -99,7 +101,7 @@ impl SsssConfig {
 ///
 /// # Ok(())
 /// # }
-pub fn gen_shares(config: &SsssConfig, secret: &[u8]) -> Result<HashMap<u8, Vec<u8>>> {
+pub fn gen_shares(config: &SsssConfig, secret: &[u8]) -> Result<Vec<String>> {
     validate_split_args(config, secret)?;
     let SsssConfig {
         num_shares,
@@ -117,7 +119,7 @@ pub fn gen_shares(config: &SsssConfig, secret: &[u8]) -> Result<HashMap<u8, Vec<
         .iter()
         .cloned()
         .enumerate()
-        .map(inc_key)
+        .map(encode_share)
         .filter_map(Result::ok)
         .collect())
 }
@@ -188,13 +190,19 @@ fn validate_split_args(config: &SsssConfig, secret: &[u8]) -> Result<()> {
 /// assert_ne!(unlock(&shares)?, secret);
 /// # Ok(())
 /// # }
-pub fn unlock<S: BuildHasher>(shares: &HashMap<u8, Vec<u8>, S>) -> Result<Vec<u8>> {
-    let secret_len = validate_join_args(shares)?;
+pub fn unlock(shares: &[String]) -> Result<Vec<u8>> {
+    let decoded = shares
+        .iter()
+        .cloned()
+        .map(decode_share)
+        .filter_map(Result::ok)
+        .collect();
+    let secret_len = validate_join_args(&decoded)?;
     let mut secret = vec![];
 
     for i in 0..secret_len {
-        let mut points = vec![vec![0; 2]; shares.len()];
-        for (idx, (k, v)) in shares.iter().enumerate() {
+        let mut points = vec![vec![0; 2]; decoded.len()];
+        for (idx, (k, v)) in decoded.iter().enumerate() {
             points[idx][0] = *k;
             points[idx][1] = v[i];
         }
@@ -204,7 +212,7 @@ pub fn unlock<S: BuildHasher>(shares: &HashMap<u8, Vec<u8>, S>) -> Result<Vec<u8
     Ok(secret)
 }
 
-fn validate_join_args<S: BuildHasher>(shares: &HashMap<u8, Vec<u8>, S>) -> Result<usize> {
+fn validate_join_args(shares: &HashMap<u8, Vec<u8>>) -> Result<usize> {
     if shares.is_empty() {
         Err(EmptySharesMap.into())
     } else {
@@ -215,6 +223,9 @@ fn validate_join_args<S: BuildHasher>(shares: &HashMap<u8, Vec<u8>, S>) -> Resul
         } else if lengths.iter().all(|x| *x == len) {
             Ok(len)
         } else {
+            for (k, v) in shares.iter() {
+                eprintln!("{k}: {v:?} => {}", v.len());
+            }
             Err(ShareLengthMismatch.into())
         }
     }
@@ -222,11 +233,10 @@ fn validate_join_args<S: BuildHasher>(shares: &HashMap<u8, Vec<u8>, S>) -> Resul
 
 #[cfg(test)]
 mod test {
-    use super::{gen_shares, unlock, SsssConfig};
+    use super::{gen_shares, unlock, utils::encode_share, SsssConfig};
     use crate::utils::{check_err_result, remove_random_entry};
     use anyhow::Result;
     use rand::thread_rng;
-    use std::collections::{hash_map::RandomState, HashMap};
 
     #[test]
     fn empty_secret() -> Result<()> {
@@ -275,28 +285,23 @@ mod test {
 
     #[test]
     fn empty_share_map() -> Result<()> {
-        let s = RandomState::new();
-        let hm = HashMap::with_hasher(s);
-        let result = unlock(&hm);
+        let result = unlock(&[]);
         check_err_result(result, "The shares map cannot be empty")
     }
 
     #[test]
     fn shares_of_differing_lengths() -> Result<()> {
-        let mut bad_shares: HashMap<u8, Vec<u8>, RandomState> = HashMap::default();
-        let _unused = bad_shares.insert(1, "abc".as_bytes().to_vec());
-        let _unused = bad_shares.insert(2, "ab".as_bytes().to_vec());
-
+        let bad_shares = vec![
+            encode_share((1, "abc".as_bytes().to_vec()))?,
+            encode_share((2, "abcdef".as_bytes().to_vec()))?,
+        ];
         let result = unlock(&bad_shares);
         check_err_result(result, "The shares must be the same length")
     }
 
     #[test]
     fn empty_shares() -> Result<()> {
-        let mut bad_shares: HashMap<u8, Vec<u8>, RandomState> = HashMap::default();
-        let _unused = bad_shares.insert(1, vec![]);
-        let _unused = bad_shares.insert(2, vec![]);
-
+        let bad_shares = vec![encode_share((1, vec![]))?];
         let result = unlock(&bad_shares);
         check_err_result(result, "A share cannot be empty")
     }
@@ -306,9 +311,10 @@ mod test {
         let config = SsssConfig::default();
         let secret = "abc".as_bytes();
         let mut shares = gen_shares(&config, secret)?;
-        let _unused = shares.insert(6, vec![55, 43, 22]);
-        let _unused = shares.insert(7, vec![33, 23, 112]);
-        let _unused = shares.insert(8, vec![121, 23, 76]);
+        shares.push(encode_share((6, "abc".as_bytes().to_vec()))?);
+        shares.push(encode_share((7, "def".as_bytes().to_vec()))?);
+        shares.push(encode_share((8, "ghi".as_bytes().to_vec()))?);
+        assert_eq!(shares.len(), 8);
         let unlocked = unlock(&shares)?;
         assert_ne!(unlocked, secret);
         Ok(())

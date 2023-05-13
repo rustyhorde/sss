@@ -271,6 +271,7 @@
 
 #[cfg(all(feature = "arbitrary", not(feature = "fuzz")))]
 use arbitrary as _;
+mod base62;
 mod error;
 mod gf256;
 mod shamir;

@@ -9,10 +9,31 @@
 //! `ssss` utils
 
 use anyhow::Result;
-use std::convert::TryFrom;
 
-pub(crate) fn inc_key(tuple: (usize, Vec<u8>)) -> Result<(u8, Vec<u8>)> {
-    Ok((u8::try_from(tuple.0 + 1)?, tuple.1))
+use crate::{
+    base62::{decode, encode},
+    error::SsssError::InvalidShareFormat,
+};
+
+#[allow(clippy::needless_pass_by_value)]
+pub(crate) fn encode_share(tuple: (usize, Vec<u8>)) -> Result<String> {
+    let idx = u8::try_from(tuple.0)? + 1;
+    let idx_enc = encode(&idx.to_be_bytes());
+    let share_enc = encode(&tuple.1);
+    Ok(format!("{idx_enc}:{share_enc}"))
+}
+
+#[allow(clippy::needless_pass_by_value)]
+pub(crate) fn decode_share(share: String) -> Result<(u8, Vec<u8>)> {
+    let split_str = share.split(':').collect::<Vec<&str>>();
+    if split_str.len() == 2 {
+        let idx_bytes = decode(split_str[0])?;
+        let idx = u8::from_be_bytes((&idx_bytes[..]).try_into()?);
+        let share = decode(split_str[1])?;
+        Ok((idx, share))
+    } else {
+        Err(InvalidShareFormat.into())
+    }
 }
 
 pub(crate) fn transpose<T>(v: &[Vec<T>]) -> Vec<Vec<T>>

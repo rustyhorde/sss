@@ -1,288 +1,307 @@
-name: CI
-on: [push, pull_request]
+on:
+  # Trigger the workflow on push to master or any pull request
+  # Ignore all tags
+  push:
+    branches:
+      - master
+    tags-ignore:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron: "13 3 * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+name: 🦀 Rust 🦀
+
 jobs:
   rustfmt:
-    name: ☢️ Formatting ☢️
+    name: 📌 Formatting 📌
     runs-on: ubuntu-latest
     steps:
-      - name: ✔️ Checkout ✔️
-        uses: actions/checkout@v2
-      - name: 🧰 Toolchain 🧰
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-          components: rustfmt
-      - run: cargo fmt --all -- --check
-  lints:
-    name: 🕳️ Lints 🕳️
+      - name: ✅ Checkout ✅
+        uses: actions/checkout@v3
+      - name: ⭕ Rustfmt Check ⭕
+        run: cargo fmt --all -- --check
+  lints-linux:
+    name: 🕳️ Lints Linux 🕳️
     needs: rustfmt
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
+        include:
+          - os: ubuntu-latest
+            rust: "1.65.0"
+          - os: ubuntu-latest
+            rust: stable
+          - os: ubuntu-latest
+            rust: beta
+          - os: ubuntu-latest
+            rust: nightly
     steps:
-      - name: ✔️ Checkout ✔️
-        uses: actions/checkout@v2
+      - name: ✅ Checkout ✅
+        uses: actions/checkout@v3
+      - name: 💵 Cache 💵
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('**/Cargo.lock', '**/main.yml') }}
       - name: 🧰 Toolchain 🧰
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-          components: clippy
-      - run: cargo clippy --all -- -D warnings
-  test:
-    name: ssss
-    needs: lints
+        run: |
+          rustup toolchain remove ${{ matrix.rust }}
+          rm -f ~/.cargo/bin/rustfmt
+          rm -f ~/.cargo/bin/cargo-fmt
+          rm -f ~/.cargo/bin/cargo-clippy
+          rustup toolchain install ${{ matrix.rust }} --profile default
+          rustup default ${{ matrix.rust }}
+      - name: 📎 Clippy 📎
+        run: |
+          cargo clippy --all-targets --all-features -- -Dwarnings
+  lints-macos:
+    name: 🕳️ Lints MacOS 🕳️
+    needs: rustfmt
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
-        - os: ubuntu-latest
-          rust: stable
-          other: i686-unknown-linux-gnu
-        - os: ubuntu-latest
-          rust: stable
-          other: x86_64-unknown-linux-gnu
-        - os: ubuntu-latest
-          rust: beta
-          other: i686-unknown-linux-gnu
-        - os: ubuntu-latest
-          rust: beta
-          other: x86_64-unknown-linux-gnu
-        - os: ubuntu-latest
-          rust: nightly
-          other: i686-unknown-linux-gnu
-        - os: ubuntu-latest
-          rust: nightly
-          other: x86_64-unknown-linux-gnu
-        - os: macos-latest
-          rust: stable
-          other: x86_64-apple-darwin
-        - os: macos-latest
-          rust: stable
-          other: x86_64-apple-ios
-        - os: macos-latest
-          rust: beta
-          other: x86_64-apple-darwin
-        - os: macos-latest
-          rust: beta
-          other: x86_64-apple-ios
-        - os: macos-latest
-          rust: nightly
-          other: x86_64-apple-darwin
-        - os: macos-latest
-          rust: nightly
-          other: x86_64-apple-ios
-        - os: windows-latest
-          rust: stable-msvc
-          other: i686-pc-windows-msvc
-        - os: windows-latest
-          rust: stable-msvc
-          other: x86_64-pc-windows-msvc
-        - os: windows-latest
-          rust: beta-msvc
-          other: i686-pc-windows-msvc
-        - os: windows-latest
-          rust: beta-msvc
-          other: x86_64-pc-windows-msvc
-        - os: windows-latest
-          rust: nightly-msvc
-          other: i686-pc-windows-msvc
-        - os: windows-latest
-          rust: nightly-msvc
-          other: x86_64-pc-windows-msvc
-        - os: windows-latest
-          rust: stable-gnu
-          other: i686-pc-windows-gnu
-        - os: windows-latest
-          rust: stable-gnu
-          other: x86_64-pc-windows-gnu
-        - os: windows-latest
-          rust: beta-gnu
-          other: i686-pc-windows-gnu
-        - os: windows-latest
-          rust: beta-gnu
-          other: x86_64-pc-windows-gnu
-        - os: windows-latest
-          rust: nightly-gnu
-          other: i686-pc-windows-gnu
-        - os: windows-latest
-          rust: nightly-gnu
-          other: x86_64-pc-windows-gnu
+          - os: macos-latest
+            rust: "1.65.0"
+          - os: macos-latest
+            rust: stable
+          - os: macos-latest
+            rust: beta
+          - os: macos-latest
+            rust: nightly
     steps:
-      - name: ✔️ Checkout ✔️
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
+      - name: ✅ Checkout ✅
+        uses: actions/checkout@v3
       - name: 💵 Cache 💵
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
-            ~/.cargo/bin/cargo-tarpaulin*
-            ~/.cargo/bin/cargo-*-all-features*
-          key: ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('**/Cargo.toml') }}
-      - uses: actions-rs/toolchain@v1
-        name: 🧰 Toolchain 🧰
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('**/Cargo.lock', '**/main.yml') }}
+      - name: 🧰 Toolchain 🧰
+        run: |
+          rustup toolchain remove ${{ matrix.rust }}
+          rustup toolchain install ${{ matrix.rust }} --profile default --no-self-update
+          rustup default ${{ matrix.rust }}
+      - name: 📎 Clippy 📎
+        run: |
+          cargo clippy --all-targets --all-features -- -Dwarnings
+  lints-windows:
+    name: 🕳️ Lints Windows 🕳️
+    needs: rustfmt
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            rust: "1.65.0"
+          - os: windows-latest
+            rust: stable
+          - os: windows-latest
+            rust: beta
+          - os: windows-latest
+            rust: nightly
+    steps:
+      - name: ✅ Checkout ✅
+        uses: actions/checkout@v3
+      - name: 💵 Cache 💵
+        uses: actions/cache@v3
         with:
-          profile: minimal
-          toolchain: ${{ matrix.rust }}
-          target: ${{ matrix.target }}
-          override: true
-      - name: 💾 Install (cargo-tarpaulin) 💾
-        uses: actions-rs/install@v0.1
-        if: matrix.os == 'ubuntu-latest'
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('**/Cargo.lock', '**/main.yml') }}
+      - name: 🧰 Toolchain 🧰
+        run: |
+          rustup toolchain remove ${{ matrix.rust }}
+          rustup toolchain install ${{ matrix.rust }} --profile default --no-self-update
+          rustup default ${{ matrix.rust }}
+      - name: 📎 Clippy 📎
+        run: |
+          cargo clippy --all-targets --all-features -- -Dwarnings
+  test-linux:
+    name: 🧪 Linux 🧪
+    needs: lints-linux
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rust: "1.65.0"
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-latest
+            rust: stable
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-latest
+            rust: beta
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-latest
+            rust: nightly
+            target: x86_64-unknown-linux-gnu
+    steps:
+      - name: ✅ Checkout ✅
+        uses: actions/checkout@v3
+      - name: 💵 Cache 💵
+        uses: actions/cache@v3
         with:
-          crate: cargo-tarpaulin
-          version: latest
-          use-tool-cache: true
-        continue-on-error: true
-      - name: 💾 Install (cargo-all-features) 💾
-        uses: actions-rs/install@v0.1
-        with:
-          crate: cargo-all-features
-          version: latest
-          use-tool-cache: true
-        continue-on-error: true
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/coverage
+          key: ${{ runner.os }}-${{ matrix.rust }}-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock', '**/main.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('**/Cargo.lock', '**/main.yml') }}
+      - name: 🧰 Toolchain 🧰
+        run: |
+          rustup toolchain remove ${{ matrix.rust }}-${{ matrix.target }}
+          rustup toolchain add ${{ matrix.rust }}-${{ matrix.target }} --profile minimal
+          rustup default ${{ matrix.rust }}
+      - name: 💾 Install (cargo-binstall) 💾
+        run: |
+          rustup override set stable
+          cargo binstall -V || cargo install cargo-binstall@0.22.0
+          rustup override remove
+      - name: 💾 Install (tarpaulin, all-features) 💾
+        run: cargo binstall --no-confirm --no-symlinks cargo-tarpaulin cargo-all-features
       - name: 🧪 Test 🧪
-        run: cargo test-all-features
-      - name: 🙊 Code Coverage 🙊
-        if: matrix.os == 'ubuntu-latest'
-        run: cargo tarpaulin --out Xml
+        run: |
+          cargo test-all-features
+      - name: 🙊 Code Coverage (vergen) 🙊
+        run: cargo tarpaulin --exclude-files src/lib.rs target/* --out Xml --skip-clean --target-dir target/coverage
       - name: 🙊 Upload Code Coverage 🙊
-        uses: codecov/codecov-action@v1
-        if: matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v3
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./cobertura.xml
-  fuzz-config:
-    name: fuzz-config
+  test-macos:
+    name: 🧪 MacOS 🧪
+    needs: lints-macos
     runs-on: ${{ matrix.os }}
-    needs: test
     strategy:
       matrix:
         include:
-        - os: ubuntu-latest
-          rust: nightly
-          other: x86_64-unknown-linux-gnu
+          - os: macos-latest
+            rust: "1.65.0"
+            target: x86_64-apple-darwin
+          - os: macos-latest
+            rust: stable
+            target: x86_64-apple-darwin
+          - os: macos-latest
+            rust: beta
+            target: x86_64-apple-darwin
+          - os: macos-latest
+            rust: nightly
+            target: x86_64-apple-darwin
     steps:
-      - name: ✔️ Checkout ✔️
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
+      - name: ✅ Checkout ✅
+        uses: actions/checkout@v3
       - name: 💵 Cache 💵
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
-            fuzz/artifacts/config
-            fuzz/corpus/config
-            ~/.cargo/bin/cargo-fuzz*
-          key: fuzz-${{ hashFiles('**/Cargo.toml') }}
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-${{ matrix.rust }}-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock', '**/main.yml') }}
           restore-keys: |
-            fuzz-
-      - uses: actions-rs/toolchain@v1
-        name: 🧰 Toolchain 🧰
-        with:
-          profile: minimal
-          toolchain: ${{ matrix.rust }}
-          target: ${{ matrix.target }}
-          override: true
-      - name: 💾 Install (cargo-fuzz) 💾
-        uses: actions-rs/install@v0.1
-        if: matrix.os == 'ubuntu-latest'
-        with:
-          crate: cargo-fuzz
-          version: latest
-          use-tool-cache: true
-        continue-on-error: true
-      - name: 🥝 Fuzz 🥝
-        run: cargo fuzz run config -- -max_total_time=300
-  fuzz-gen-shares:
-    name: fuzz-gen-shares
+            ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('**/Cargo.lock', '**/main.yml') }}
+      - name: 🧰 Toolchain 🧰
+        run: |
+          rustup toolchain remove ${{ matrix.rust }}-${{ matrix.target }}
+          rustup toolchain add ${{ matrix.rust }}-${{ matrix.target }} --profile minimal
+          rustup default ${{ matrix.rust }}
+      - name: 💾 Install (cargo-binstall) 💾
+        run: |
+          rustup override set stable
+          cargo binstall -V || cargo install cargo-binstall@0.22.0
+          rustup override remove
+      - name: 💾 Install (all-features) 💾
+        run: cargo binstall --no-confirm --no-symlinks cargo-all-features
+      - name: 🧪 Test 🧪
+        run: |
+          cargo test-all-features
+  test-windows:
+    name: 🧪 Windows 🧪
+    needs: lints-windows
     runs-on: ${{ matrix.os }}
-    needs: test
     strategy:
       matrix:
         include:
-        - os: ubuntu-latest
-          rust: nightly
-          other: x86_64-unknown-linux-gnu
+          - os: windows-latest
+            rust: "1.65.0"
+            target: x86_64-pc-windows-msvc
+          - os: windows-latest
+            rust: stable
+            target: x86_64-pc-windows-msvc
+          - os: windows-latest
+            rust: beta
+            target: x86_64-pc-windows-msvc
+          - os: windows-latest
+            rust: nightly
+            target: x86_64-pc-windows-msvc
+          - os: windows-latest
+            rust: "1.65.0"
+            target: x86_64-pc-windows-gnu
+          - os: windows-latest
+            rust: stable
+            target: x86_64-pc-windows-gnu
+          - os: windows-latest
+            rust: beta
+            target: x86_64-pc-windows-gnu
+          - os: windows-latest
+            rust: nightly
+            target: x86_64-pc-windows-gnu
     steps:
-      - name: ✔️ Checkout ✔️
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
+      - name: ✅ Checkout ✅
+        uses: actions/checkout@v3
       - name: 💵 Cache 💵
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
-            fuzz/artifacts/gen_shares
-            fuzz/corpus/gen_shares
-            ~/.cargo/bin/cargo-fuzz*
-          key: fuzz-${{ hashFiles('**/Cargo.toml') }}
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-${{ matrix.rust }}-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock', '**/main.yml') }}
           restore-keys: |
-            fuzz-
-      - uses: actions-rs/toolchain@v1
-        name: 🧰 Toolchain 🧰
-        with:
-          profile: minimal
-          toolchain: ${{ matrix.rust }}
-          target: ${{ matrix.target }}
-          override: true
-      - name: 💾 Install (cargo-fuzz) 💾
-        uses: actions-rs/install@v0.1
-        if: matrix.os == 'ubuntu-latest'
-        with:
-          crate: cargo-fuzz
-          version: latest
-          use-tool-cache: true
-        continue-on-error: true
-      - name: 🥝 Fuzz 🥝
-        run: cargo fuzz run gen_shares -- -max_total_time=300
-  fuzz-unlock:
-    name: fuzz-unlock
-    runs-on: ${{ matrix.os }}
-    needs: test
-    strategy:
-      matrix:
-        include:
-        - os: ubuntu-latest
-          rust: nightly
-          other: x86_64-unknown-linux-gnu
-    steps:
-      - name: ✔️ Checkout ✔️
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: 💵 Cache 💵
-        uses: actions/cache@v2
-        with:
-          path: |
-            fuzz/artifacts/unlock
-            fuzz/corpus/unlock
-            ~/.cargo/bin/cargo-fuzz*
-          key: fuzz-${{ hashFiles('**/Cargo.toml') }}
-          restore-keys: |
-            fuzz-
-      - uses: actions-rs/toolchain@v1
-        name: 🧰 Toolchain 🧰
-        with:
-          profile: minimal
-          toolchain: ${{ matrix.rust }}
-          target: ${{ matrix.target }}
-          override: true
-      - name: 💾 Install (cargo-fuzz) 💾
-        uses: actions-rs/install@v0.1
-        if: matrix.os == 'ubuntu-latest'
-        with:
-          crate: cargo-fuzz
-          version: latest
-          use-tool-cache: true
-        continue-on-error: true
-      - name: 🥝 Fuzz 🥝
-        run: cargo fuzz run unlock -- -max_total_time=300
+            ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('**/Cargo.lock', '**/main.yml') }}
+      - name: 🧰 Toolchain 🧰
+        run: |
+          rustup toolchain remove ${{ matrix.rust }}-${{ matrix.target }}
+          rustup toolchain add ${{ matrix.rust }}-${{ matrix.target }} --profile minimal --no-self-update
+          rustup default ${{ matrix.rust }}
+      - name: 💾 Install (cargo-binstall) 💾
+        run: |
+          rustup override set stable
+          cargo binstall -V || cargo install cargo-binstall@0.22.0
+          rustup override remove
+      - name: 💾 Install (all-features) 💾
+        run: cargo binstall --no-confirm --no-symlinks cargo-all-features
+      - name: 🧪 Test 🧪
+        run: |
+          cargo test-all-features
