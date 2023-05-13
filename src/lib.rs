@@ -112,7 +112,6 @@
         ellipsis_inclusive_range_patterns,
         explicit_outlives_requirements,
         exported_private_dependencies,
-        ffi_unwind_calls,
         forbidden_lint_groups,
         for_loops_over_fallibles,
         function_item_references,
@@ -221,6 +220,7 @@
 #![cfg_attr(
     all(msrv, feature = "unstable", nightly),
     deny(
+        ffi_unwind_calls,
         fuzzy_provenance_casts,
         lossy_provenance_casts,
         multiple_supertrait_upcastable,
