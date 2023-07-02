@@ -69,6 +69,7 @@ jobs:
           rustup default ${{ matrix.rust }}
       - name: 📎 Clippy 📎
         run: |
+          cargo update
           cargo clippy --all-targets --all-features -- -Dwarnings
   lints-macos:
     name: 🕳️ Lints MacOS 🕳️
