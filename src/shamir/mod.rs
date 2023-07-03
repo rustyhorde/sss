@@ -223,7 +223,7 @@ fn validate_join_args(shares: &HashMap<u8, Vec<u8>>) -> Result<usize> {
         } else if lengths.iter().all(|x| *x == len) {
             Ok(len)
         } else {
-            for (k, v) in shares.iter() {
+            for (k, v) in shares {
                 eprintln!("{k}: {v:?} => {}", v.len());
             }
             Err(ShareLengthMismatch.into())
