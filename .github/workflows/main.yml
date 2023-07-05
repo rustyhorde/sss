@@ -185,7 +185,7 @@ jobs:
       - name: 💾 Install (cargo-binstall) 💾
         run: |
           rustup override set stable
-          cargo binstall -V || cargo install cargo-binstall@0.22.0
+          cargo binstall -V || cargo install cargo-binstall
           rustup override remove
       - name: 💾 Install (tarpaulin, all-features) 💾
         run: cargo binstall --no-confirm --no-symlinks cargo-tarpaulin cargo-all-features
@@ -239,7 +239,7 @@ jobs:
       - name: 💾 Install (cargo-binstall) 💾
         run: |
           rustup override set stable
-          cargo binstall -V || cargo install cargo-binstall@0.22.0
+          cargo binstall -V || cargo install cargo-binstall
           rustup override remove
       - name: 💾 Install (all-features) 💾
         run: cargo binstall --no-confirm --no-symlinks cargo-all-features
@@ -299,7 +299,7 @@ jobs:
       - name: 💾 Install (cargo-binstall) 💾
         run: |
           rustup override set stable
-          cargo binstall -V || cargo install cargo-binstall@0.22.0
+          cargo binstall -V || cargo install cargo-binstall
           rustup override remove
       - name: 💾 Install (all-features) 💾
         run: cargo binstall --no-confirm --no-symlinks cargo-all-features
