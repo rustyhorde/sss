@@ -193,7 +193,7 @@ jobs:
         run: |
           cargo test-all-features
       - name: 🙊 Code Coverage (vergen) 🙊
-        run: cargo tarpaulin --exclude-files src/lib.rs target/* --out Xml --skip-clean --target-dir target/coverage
+        run: cargo tarpaulin --exclude-files src/lib.rs target/* --out xml --skip-clean --target-dir target/coverage
       - name: 🙊 Upload Code Coverage 🙊
         uses: codecov/codecov-action@v3
         with:
