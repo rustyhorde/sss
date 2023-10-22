@@ -40,7 +40,7 @@ pub(crate) fn transpose<T>(v: &[Vec<T>]) -> Vec<Vec<T>>
 where
     T: Clone,
 {
-    if let Some(first) = v.get(0) {
+    if let Some(first) = v.first() {
         (0..first.len())
             .map(|i| v.iter().map(|inner| inner[i].clone()).collect::<Vec<T>>())
             .collect()
