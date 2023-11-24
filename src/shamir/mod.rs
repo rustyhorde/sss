@@ -71,6 +71,25 @@ impl SsssConfig {
             Ok(())
         }
     }
+
+    /// Creates a new instance of the Shamir struct.
+    ///
+    /// # Arguments
+    ///
+    /// * `num_shares` - The number of shares to generate.
+    /// * `threshold` - The minimum number of shares required to reconstruct the secret.
+    /// * `max_secret_size` - The maximum size of the secret in bytes.
+    ///
+    /// # Returns
+    ///
+    /// A new instance of the Shamir struct.
+    pub fn new(num_shares: u8, threshold: u8, max_secret_size: usize) -> Self {
+        Self {
+            num_shares,
+            threshold,
+            max_secret_size,
+        }
+    }
 }
 
 /// Generate shares based on the [`num_shares`](SsssConfig::set_num_shares) and [`threshold`](SsssConfig::set_threshold) given
