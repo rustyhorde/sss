@@ -27,7 +27,7 @@ num-bigint = "0.4.3"
 num-traits = "0.2.15"
 num-integer = "0.1.45"
 rand = "0.8.5"
-serde = { version = "=1.0.171", features = ["derive"] }
+serde = { version = "1.0.192", features = ["derive"] }
 thiserror = "1.0.40"
 
 [build-dependencies]
