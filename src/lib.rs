@@ -205,7 +205,6 @@
         unused_parens,
         unused_qualifications,
         unused_results,
-        unused_tuple_struct_fields,
         unused_unsafe,
         unused_variables,
         variant_size_differences,
