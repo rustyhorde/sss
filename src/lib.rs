@@ -115,7 +115,6 @@
         forbidden_lint_groups,
         for_loops_over_fallibles,
         function_item_references,
-        illegal_floating_point_literal_pattern,
         improper_ctypes,
         improper_ctypes_definitions,
         incomplete_features,
