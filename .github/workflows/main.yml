@@ -1,16 +1,14 @@
 on:
-  # Trigger the workflow on push to master or any pull request
-  # Ignore all tags
   push:
     branches:
       - master
+      - legacy/*
     tags-ignore:
       - "*"
   pull_request:
     branches:
       - "*"
   schedule:
-    # * is a special character in YAML so you have to quote this string
     - cron: "13 3 * * *"
 
 concurrency:
@@ -25,284 +23,138 @@ name: 🦀 Rust 🦀
 jobs:
   rustfmt:
     name: 📌 Formatting 📌
-    runs-on: ubuntu-latest
-    steps:
-      - name: ✅ Checkout ✅
-        uses: actions/checkout@v3
-      - name: ⭕ Rustfmt Check ⭕
-        run: cargo fmt --all -- --check
+    uses: rustyhorde/workflows/.github/workflows/rustfmt.yml@main
+
   lints-linux:
-    name: 🕳️ Lints Linux 🕳️
+    name: 🕳️ Clippy (Linux) 🕳️
     needs: rustfmt
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            rust: "1.65.0"
-          - os: ubuntu-latest
-            rust: stable
-          - os: ubuntu-latest
-            rust: beta
-          - os: ubuntu-latest
-            rust: nightly
-    steps:
-      - name: ✅ Checkout ✅
-        uses: actions/checkout@v3
-      - name: 💵 Cache 💵
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('**/Cargo.lock', '**/main.yml') }}
-      - name: 🧰 Toolchain 🧰
-        run: |
-          rustup toolchain remove ${{ matrix.rust }}
-          rm -f ~/.cargo/bin/rustfmt
-          rm -f ~/.cargo/bin/cargo-fmt
-          rm -f ~/.cargo/bin/cargo-clippy
-          rustup toolchain install ${{ matrix.rust }} --profile default
-          rustup default ${{ matrix.rust }}
-      - name: 📎 Clippy 📎
-        run: |
-          cargo update
-          cargo clippy --all-targets --all-features -- -Dwarnings
+    uses: rustyhorde/workflows/.github/workflows/clippy-all-features.yml@main
+    with:
+      os: ubuntu-latest
+      channel: nightly
+      target: x86_64-unknown-linux-gnu
+      cargo_dir: side_load
+
   lints-macos:
-    name: 🕳️ Lints MacOS 🕳️
+    name: 🕳️ Clippy (MacOS) 🕳️
     needs: rustfmt
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: macos-latest
-            rust: "1.65.0"
-          - os: macos-latest
-            rust: stable
-          - os: macos-latest
-            rust: beta
-          - os: macos-latest
-            rust: nightly
-    steps:
-      - name: ✅ Checkout ✅
-        uses: actions/checkout@v3
-      - name: 💵 Cache 💵
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('**/Cargo.lock', '**/main.yml') }}
-      - name: 🧰 Toolchain 🧰
-        run: |
-          rustup toolchain remove ${{ matrix.rust }}
-          rustup toolchain install ${{ matrix.rust }} --profile default --no-self-update
-          rustup default ${{ matrix.rust }}
-      - name: 📎 Clippy 📎
-        run: |
-          cargo clippy --all-targets --all-features -- -Dwarnings
+    uses: rustyhorde/workflows/.github/workflows/clippy-all-features.yml@main
+    with:
+      os: macos-latest
+      channel: nightly
+      target: x86_64-apple-darwin
+      cargo_dir: side_load
+
   lints-windows:
-    name: 🕳️ Lints Windows 🕳️
+    name: 🕳️ Clippy (Windows) 🕳️
     needs: rustfmt
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: windows-latest
-            rust: "1.65.0"
-          - os: windows-latest
-            rust: stable
-          - os: windows-latest
-            rust: beta
-          - os: windows-latest
-            rust: nightly
-    steps:
-      - name: ✅ Checkout ✅
-        uses: actions/checkout@v3
-      - name: 💵 Cache 💵
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('**/Cargo.lock', '**/main.yml') }}
-      - name: 🧰 Toolchain 🧰
-        run: |
-          rustup toolchain remove ${{ matrix.rust }}
-          rustup toolchain install ${{ matrix.rust }} --profile default --no-self-update
-          rustup default ${{ matrix.rust }}
-      - name: 📎 Clippy 📎
-        run: |
-          cargo clippy --all-targets --all-features -- -Dwarnings
+    uses: rustyhorde/workflows/.github/workflows/clippy-all-features.yml@main
+    with:
+      os: windows-latest
+      channel: nightly
+      target: x86_64-pc-windows-gnu
+      cargo_dir: side_load
+
   test-linux:
-    name: 🧪 Linux 🧪
+    name: 🧪 Test (Linux) 🧪
     needs: lints-linux
-    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        include:
-          - os: ubuntu-latest
-            rust: "1.65.0"
-            target: x86_64-unknown-linux-gnu
-          - os: ubuntu-latest
-            rust: stable
-            target: x86_64-unknown-linux-gnu
-          - os: ubuntu-latest
-            rust: beta
-            target: x86_64-unknown-linux-gnu
-          - os: ubuntu-latest
-            rust: nightly
-            target: x86_64-unknown-linux-gnu
-    steps:
-      - name: ✅ Checkout ✅
-        uses: actions/checkout@v3
-      - name: 💵 Cache 💵
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/coverage
-          key: ${{ runner.os }}-${{ matrix.rust }}-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock', '**/main.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('**/Cargo.lock', '**/main.yml') }}
-      - name: 🧰 Toolchain 🧰
-        run: |
-          rustup toolchain remove ${{ matrix.rust }}-${{ matrix.target }}
-          rustup toolchain add ${{ matrix.rust }}-${{ matrix.target }} --profile minimal
-          rustup default ${{ matrix.rust }}
-      - name: 💾 Install (cargo-binstall) 💾
-        run: |
-          rustup override set stable
-          cargo binstall -V || cargo install cargo-binstall
-          rustup override remove
-      - name: 💾 Install (tarpaulin, all-features) 💾
-        run: cargo binstall --no-confirm --no-symlinks --force cargo-tarpaulin cargo-all-features
-      - name: 🧪 Test 🧪
-        run: |
-          cargo test-all-features
-      - name: 🙊 Code Coverage (vergen) 🙊
-        run: cargo tarpaulin --exclude-files src/lib.rs target/* --out xml --skip-clean --target-dir target/coverage
-      - name: 🙊 Upload Code Coverage 🙊
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./cobertura.xml
+        os: [ubuntu-latest]
+        channel: ["1.70.0", "stable", "beta", "nightly"]
+        target: [x86_64-unknown-linux-gnu]
+    uses: rustyhorde/workflows/.github/workflows/test-all-features.yml@main
+    with:
+      os: ${{ matrix.os }}
+      channel: ${{ matrix.channel }}
+      target: ${{ matrix.target }}
+
   test-macos:
-    name: 🧪 MacOS 🧪
+    name: 🧪 Test (MacOS) 🧪
     needs: lints-macos
-    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        include:
-          - os: macos-latest
-            rust: "1.65.0"
-            target: x86_64-apple-darwin
-          - os: macos-latest
-            rust: stable
-            target: x86_64-apple-darwin
-          - os: macos-latest
-            rust: beta
-            target: x86_64-apple-darwin
-          - os: macos-latest
-            rust: nightly
-            target: x86_64-apple-darwin
-    steps:
-      - name: ✅ Checkout ✅
-        uses: actions/checkout@v3
-      - name: 💵 Cache 💵
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-          key: ${{ runner.os }}-${{ matrix.rust }}-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock', '**/main.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('**/Cargo.lock', '**/main.yml') }}
-      - name: 🧰 Toolchain 🧰
-        run: |
-          rustup toolchain remove ${{ matrix.rust }}-${{ matrix.target }}
-          rustup toolchain add ${{ matrix.rust }}-${{ matrix.target }} --profile minimal
-          rustup default ${{ matrix.rust }}
-      - name: 💾 Install (cargo-binstall) 💾
-        run: |
-          rustup override set stable
-          cargo binstall -V || cargo install cargo-binstall
-          rustup override remove
-      - name: 💾 Install (all-features) 💾
-        run: cargo binstall --no-confirm --no-symlinks --force cargo-all-features
-      - name: 🧪 Test 🧪
-        run: |
-          cargo test-all-features
+        os: [macos-latest]
+        channel: ["1.70.0", "stable", "beta", "nightly"]
+        target: [x86_64-apple-darwin]
+    uses: rustyhorde/workflows/.github/workflows/test-all-features.yml@main
+    with:
+      os: ${{ matrix.os }}
+      channel: ${{ matrix.channel }}
+      target: ${{ matrix.target }}
+
   test-windows:
-    name: 🧪 Windows 🧪
+    name: 🧪 Test (Windows) 🧪
     needs: lints-windows
-    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        include:
-          - os: windows-latest
-            rust: "1.65.0"
-            target: x86_64-pc-windows-msvc
-          - os: windows-latest
-            rust: stable
-            target: x86_64-pc-windows-msvc
-          - os: windows-latest
-            rust: beta
-            target: x86_64-pc-windows-msvc
-          - os: windows-latest
-            rust: nightly
-            target: x86_64-pc-windows-msvc
-          - os: windows-latest
-            rust: "1.65.0"
-            target: x86_64-pc-windows-gnu
-          - os: windows-latest
-            rust: stable
-            target: x86_64-pc-windows-gnu
-          - os: windows-latest
-            rust: beta
-            target: x86_64-pc-windows-gnu
-          - os: windows-latest
-            rust: nightly
-            target: x86_64-pc-windows-gnu
-    steps:
-      - name: ✅ Checkout ✅
-        uses: actions/checkout@v3
-      - name: 💵 Cache 💵
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-          key: ${{ runner.os }}-${{ matrix.rust }}-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock', '**/main.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('**/Cargo.lock', '**/main.yml') }}
-      - name: 🧰 Toolchain 🧰
-        run: |
-          rustup toolchain remove ${{ matrix.rust }}-${{ matrix.target }}
-          rustup toolchain add ${{ matrix.rust }}-${{ matrix.target }} --profile minimal --no-self-update
-          rustup default ${{ matrix.rust }}
-      - name: 💾 Install (cargo-binstall) 💾
-        run: |
-          rustup override set stable
-          cargo binstall -V || cargo install cargo-binstall
-          rustup override remove
-      - name: 💾 Install (all-features) 💾
-        run: cargo binstall --no-confirm --no-symlinks --force cargo-all-features
-      - name: 🧪 Test 🧪
-        run: |
-          cargo test-all-features
+        os: [windows-latest]
+        channel: ["1.70.0", "stable", "beta", "nightly"]
+        target: [x86_64-pc-windows-gnu, x86_64-pc-windows-msvc]
+    uses: rustyhorde/workflows/.github/workflows/test-all-features.yml@main
+    with:
+      os: ${{ matrix.os }}
+      channel: ${{ matrix.channel }}
+      target: ${{ matrix.target }}
+
+  coverage-linux:
+    name: 🧱 Coverage (Linux) 🧱
+    needs: test-linux
+    uses: rustyhorde/workflows/.github/workflows/coverage.yml@main
+    with:
+      os: ubuntu-latest
+      channel: nightly
+      target: x86_64-unknown-linux-gnu
+      lcov: true
+      html: true
+    secrets: inherit
+
+  coverage-macos:
+    name: 🧱 Coverage (MacOS) 🧱
+    needs: test-macos
+    uses: rustyhorde/workflows/.github/workflows/coverage.yml@main
+    with:
+      os: macos-latest
+      channel: nightly
+      target: x86_64-apple-darwin
+      lcov: true
+      html: true
+    secrets: inherit
+
+  coverage-windows:
+    name: 🧱 Coverage (Wndows) 🧱
+    needs: test-windows
+    strategy:
+      matrix:
+        target: [x86_64-pc-windows-gnu, x86_64-pc-windows-msvc]
+    uses: rustyhorde/workflows/.github/workflows/coverage.yml@main
+    with:
+      os: windows-latest
+      channel: nightly
+      target: ${{ matrix.target }}
+      lcov: true
+      html: true
+    secrets: inherit
+
+  build_tier2:
+    name: ☎️ Tier 2 ☎️
+    needs: [coverage-linux, coverage-macos, coverage-windows]
+    strategy:
+      matrix:
+        target:
+          [
+            aarch64-linux-android,
+            aarch64-unknown-linux-gnu,
+            aarch64-unknown-linux-musl,
+            i686-pc-windows-gnu,
+            i686-unknown-linux-gnu,
+            powerpc-unknown-linux-gnu,
+            powerpc64-unknown-linux-gnu,
+            riscv64gc-unknown-linux-gnu,
+            sparc64-unknown-linux-gnu,
+            wasm32-unknown-emscripten,
+            x86_64-unknown-linux-musl,
+          ]
+    uses: rustyhorde/workflows/.github/workflows/build-tier2.yml@main
+    with:
+      target: ${{ matrix.target }}
