@@ -107,6 +107,7 @@ jobs:
       target: x86_64-unknown-linux-gnu
       lcov: true
       html: true
+    secrets: inherit
 
   coverage-macos:
     name: 🧱 Coverage (MacOS) 🧱
@@ -118,6 +119,7 @@ jobs:
       target: x86_64-apple-darwin
       lcov: true
       html: true
+    secrets: inherit
 
   coverage-windows:
     name: 🧱 Coverage (Wndows) 🧱
@@ -132,6 +134,7 @@ jobs:
       target: ${{ matrix.target }}
       lcov: true
       html: true
+    secrets: inherit
 
   build_tier2:
     name: ☎️ Tier 2 ☎️
