@@ -33,7 +33,6 @@ jobs:
       os: ubuntu-latest
       channel: nightly
       target: x86_64-unknown-linux-gnu
-      cargo_dir: side_load
 
   lints-macos:
     name: 🕳️ Clippy (MacOS) 🕳️
@@ -43,7 +42,6 @@ jobs:
       os: macos-latest
       channel: nightly
       target: x86_64-apple-darwin
-      cargo_dir: side_load
 
   lints-windows:
     name: 🕳️ Clippy (Windows) 🕳️
@@ -53,7 +51,6 @@ jobs:
       os: windows-latest
       channel: nightly
       target: x86_64-pc-windows-gnu
-      cargo_dir: side_load
 
   test-linux:
     name: 🧪 Test (Linux) 🧪
