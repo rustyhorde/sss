@@ -160,7 +160,6 @@
         single_use_lifetimes,
         special_module_name,
         stable_features,
-        suspicious_auto_trait_impls,
         temporary_cstring_as_ptr,
         trivial_bounds,
         trivial_casts,
