@@ -178,7 +178,6 @@
         unreachable_pub,
         unsafe_code,
         unsafe_op_in_unsafe_fn,
-        unstable_features,
         unstable_name_collisions,
         unstable_syntax_pre_expansion,
         unsupported_calling_conventions,
