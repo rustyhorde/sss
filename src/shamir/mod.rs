@@ -79,9 +79,9 @@ impl SsssConfig {
 ///
 /// # Errors
 /// * This function will generate an error if `secret` is empty or larger than
-/// [`max_secret_size`](SsssConfig::set_max_secret_size) in the configuration.
+///   [`max_secret_size`](SsssConfig::set_max_secret_size) in the configuration.
 /// * This function will generate an error if either [`num_shares`](SsssConfig::set_num_shares) or [`threshold`](SsssConfig::set_threshold)
-/// are 0.
+///   are 0.
 /// * This function will generate an error if [`threshold`](SsssConfig::set_threshold) is greater than [`num_shares`](SsssConfig::set_num_shares)
 ///
 /// # Example
@@ -142,14 +142,14 @@ fn validate_split_args(config: &SsssConfig, secret: &[u8]) -> Result<()> {
 ///
 /// # Notes
 /// * If there aren't enough shares to meet the threshold defined when
-/// the shares were created the resulting vector of bytes will be gibberish.
+///   the shares were created the resulting vector of bytes will be gibberish.
 /// * If there are more shares supplied than were defined when the shares
-/// were created the resulting vector of bytes will be gibberish.
+///   were created the resulting vector of bytes will be gibberish.
 ///
 /// # Errors
 /// * This function will generate an error if the `shares` map is empty.
 /// * This function will generate an error if the `shares` within the map are not
-/// all the same length.
+///   all the same length.
 ///
 /// # Example
 /// ```
