@@ -81,7 +81,7 @@
         strict_provenance,
     )
 )]
-#![cfg_attr(nightly, allow(box_pointers, single_use_lifetimes))]
+#![cfg_attr(nightly, allow(single_use_lifetimes))]
 #![cfg_attr(
     nightly,
     deny(
