@@ -73,9 +73,10 @@ impl SsssConfig {
     }
 }
 
-/// Generate shares based on the [`num_shares`](SsssConfig::set_num_shares) and [`threshold`](SsssConfig::set_threshold) given
-/// in the configuration.  Using the default [`SsssConfig`] will generate 5 shares
-/// of which 3 are required to unlock the secret.
+/// Generate shares based on the [`num_shares`](SsssConfig::set_num_shares) and
+/// [`threshold`](SsssConfig::set_threshold) given in the configuration.  
+///
+/// Using the default [`SsssConfig`] will generate 5 shares of which 3 are required to unlock the secret.
 ///
 /// # Errors
 /// * This function will generate an error if `secret` is empty or larger than
