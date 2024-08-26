@@ -233,7 +233,6 @@
         variant_size_differences,
         wasm_c_abi,
         while_true,
-        writes_through_immutable_pointer,
     )
 )]
 // If nightly and unstable, allow `incomplete_features` and `unstable_features`
