@@ -20,7 +20,6 @@ use crate::{
 use anyhow::Result;
 #[cfg(feature = "fuzz")]
 use arbitrary::Arbitrary;
-use getset::Setters;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use utils::{encode_share, transpose};
@@ -31,10 +30,9 @@ use self::utils::decode_share;
 ///
 /// # Notes
 /// The default configuration will specify 5 shares with a
-/// threshold of 3.  The maximum secret size is [`u16::MAX`] (65536)
-#[derive(Clone, Copy, Debug, Deserialize, Serialize, Setters)]
+/// threshold of 3. The maximum secret size is [`u16::MAX`] (65536)
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 #[cfg_attr(feature = "fuzz", derive(Arbitrary))]
-#[getset(set = "pub")]
 pub struct SsssConfig {
     /// The total shares to be generate from a secret
     num_shares: u8,
@@ -70,6 +68,24 @@ impl SsssConfig {
         } else {
             Ok(())
         }
+    }
+
+    /// Updates the number of shares
+    pub fn set_num_shares(&mut self, num: u8) -> &mut Self {
+        self.num_shares = num;
+        self
+    }
+
+    /// Updates the threshold value
+    pub fn set_threshold(&mut self, threshold: u8) -> &mut Self {
+        self.threshold = threshold;
+        self
+    }
+
+    /// Updates the maximum secret size
+    pub fn set_max_secret_size(&mut self, max_secret: usize) -> &mut Self {
+        self.max_secret_size = max_secret;
+        self
     }
 }
 
