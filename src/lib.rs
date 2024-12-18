@@ -276,8 +276,6 @@
 )]
 #![cfg_attr(all(doc, nightly), feature(doc_auto_cfg))]
 #![cfg_attr(all(docsrs, nightly), feature(doc_cfg))]
-#![cfg_attr(coverage_nightly, allow(unstable_features))]
-#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 
 #[cfg(all(feature = "arbitrary", not(feature = "fuzz")))]
 use arbitrary as _;
