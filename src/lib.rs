@@ -32,7 +32,7 @@
 //!
 //! ```rust
 //! # use anyhow::Result;
-//! # use rand::{thread_rng, rngs::ThreadRng};
+//! # use rand::{rng, rngs::ThreadRng};
 //! # use ssss::{unlock, gen_shares, remove_random_entry, SsssConfig};
 //! #
 //! # fn main() -> Result<()> {
@@ -49,7 +49,7 @@
 //!
 //! // Remove a random share from `shares` and check that 4 shares can unlock
 //! // the secret
-//! let mut rng = thread_rng();
+//! let mut rng = rng();
 //! remove_random_entry(&mut rng, &mut shares);
 //! assert_eq!(shares.len(), 4);
 //! assert_eq!(unlock(&shares)?, secret);
@@ -229,7 +229,6 @@
         unused_variables,
         useless_ptr_null_checks,
         variant_size_differences,
-        wasm_c_abi,
         while_true,
     )
 )]

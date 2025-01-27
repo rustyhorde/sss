@@ -155,7 +155,7 @@ fn validate_split_args(config: &SsssConfig, secret: &[u8]) -> Result<()> {
 /// # Example
 /// ```
 /// # use anyhow::Result;
-/// # use rand::{thread_rng, rngs::ThreadRng};
+/// # use rand::{rng, rngs::ThreadRng};
 /// # use ssss::{gen_shares, unlock, remove_random_entry, SsssConfig};
 /// #
 /// # pub fn main() -> Result<()> {
@@ -173,7 +173,7 @@ fn validate_split_args(config: &SsssConfig, secret: &[u8]) -> Result<()> {
 ///
 /// // Remove a random share from `shares` and check that 4 shares can unlock
 /// // the secret
-/// let mut rng = thread_rng();
+/// let mut rng = rng();
 /// remove_random_entry(&mut rng, &mut shares);
 /// assert_eq!(shares.len(), 4);
 /// assert_eq!(unlock(&shares)?, secret);
@@ -237,7 +237,7 @@ mod test {
     use super::{gen_shares, unlock, utils::encode_share, SsssConfig};
     use crate::utils::{check_err_result, remove_random_entry};
     use anyhow::Result;
-    use rand::thread_rng;
+    use rand::rng;
 
     #[test]
     fn empty_secret() -> Result<()> {
@@ -333,7 +333,7 @@ mod test {
         assert_eq!(unlock(&parts)?, secret);
 
         // 4 parts shoud work
-        let mut rng = thread_rng();
+        let mut rng = rng();
         remove_random_entry(&mut rng, &mut parts);
         assert_eq!(parts.len(), 4);
         assert_eq!(unlock(&parts)?, secret);
