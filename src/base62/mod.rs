@@ -10,7 +10,7 @@ use anyhow::Result;
 use num_bigint::BigUint;
 use num_integer::Integer;
 use num_traits::{One, ToPrimitive, Zero};
-use rand::{rng, RngCore};
+use rand::{thread_rng, RngCore};
 
 use crate::error::SsssError::BadCharacter;
 
@@ -28,7 +28,7 @@ pub(crate) fn encode(bytes: &[u8]) -> String {
         String::new()
     } else {
         let mut nonce = [0u8; 10];
-        rng().fill_bytes(&mut nonce);
+        thread_rng().fill_bytes(&mut nonce);
         let mut input = nonce.to_vec();
         input[0] = 1;
         input.extend_from_slice(bytes);
