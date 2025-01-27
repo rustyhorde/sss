@@ -27,7 +27,7 @@ getset = "0.1.4"
 num-bigint = "0.4.6"
 num-traits = "0.2.19"
 num-integer = "0.1.46"
-rand = "0.8.5"
+rand = "=0.8.5"
 serde = { version = "1.0.217", features = ["derive"] }
 thiserror = "2.0.11"
 
