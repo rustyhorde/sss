@@ -10,6 +10,7 @@
 
 mod utils;
 
+use self::utils::{decode_share, encode_share, transpose};
 use crate::{
     error::SsssError::{
         EmptySecret, EmptyShare, EmptySharesMap, SecretLength, ShareLengthMismatch, SharesZero,
@@ -23,9 +24,6 @@ use arbitrary::Arbitrary;
 use getset::Setters;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use utils::{encode_share, transpose};
-
-use self::utils::decode_share;
 
 /// Configuration used to drive the [`gen_shares`] function.
 ///

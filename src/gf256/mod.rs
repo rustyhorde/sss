@@ -10,7 +10,7 @@
 
 mod constants;
 
-use constants::{EXP, LOG};
+use self::constants::{EXP, LOG};
 use rand::RngCore;
 
 pub(crate) fn generate_coeffs(d: u8, x: u8) -> Vec<u8> {
