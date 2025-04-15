@@ -211,7 +211,6 @@
         uncommon_codepoints,
         unconditional_recursion,
         uncovered_param_in_projection,
-        undefined_naked_function_abi,
         unexpected_cfgs,
         unfulfilled_lint_expectations,
         ungated_async_fn_track_caller,
