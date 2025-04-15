@@ -10,11 +10,11 @@
 
 mod constants;
 
-use constants::{EXP, LOG};
+use self::constants::{EXP, LOG};
 use rand::RngCore;
 
 pub(crate) fn generate_coeffs(d: u8, x: u8) -> Vec<u8> {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     let d_usize = usize::from(d);
     let mut rand_bytes = vec![0; d_usize];
 
