@@ -143,7 +143,6 @@ jobs:
             aarch64-linux-android,
             aarch64-unknown-linux-gnu,
             aarch64-unknown-linux-musl,
-            i686-pc-windows-gnu,
             i686-unknown-linux-gnu,
             powerpc-unknown-linux-gnu,
             powerpc64-unknown-linux-gnu,
