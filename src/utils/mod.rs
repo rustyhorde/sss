@@ -9,7 +9,7 @@
 //! `ssss` testing utilities
 
 #[cfg(test)]
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use rand::{rngs::ThreadRng, seq::IteratorRandom};
 
 #[doc(hidden)]

@@ -10,7 +10,7 @@ use anyhow::Result;
 use num_bigint::BigUint;
 use num_integer::Integer;
 use num_traits::{One, ToPrimitive, Zero};
-use rand::{rng, RngCore};
+use rand::{RngCore, rng};
 
 use crate::error::SsssError::BadCharacter;
 

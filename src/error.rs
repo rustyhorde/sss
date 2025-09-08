@@ -15,7 +15,11 @@ pub(crate) enum SsssError {
     ThresholdZero,
     #[error("The number of shares must be greater than 0")]
     SharesZero,
-    #[error("You have specified an invalid threshold.  It must be less than or equal to the number of shares. ({} is not <= {})", threshold, shares)]
+    #[error(
+        "You have specified an invalid threshold.  It must be less than or equal to the number of shares. ({} is not <= {})",
+        threshold,
+        shares
+    )]
     ThresholdToLow { threshold: u8, shares: u8 },
     #[error("The secret cannot be empty")]
     EmptySecret,

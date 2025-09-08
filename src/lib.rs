@@ -311,7 +311,7 @@ mod gf256;
 mod shamir;
 mod utils;
 
+pub use self::shamir::SsssConfig;
 pub use self::shamir::gen_shares;
 pub use self::shamir::unlock;
-pub use self::shamir::SsssConfig;
 pub use self::utils::remove_random_entry;
