@@ -21,7 +21,7 @@ use crate::{
 use anyhow::Result;
 #[cfg(feature = "fuzz")]
 use arbitrary::Arbitrary;
-use getset::Setters;
+use bon::Builder;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -30,26 +30,24 @@ use std::collections::HashMap;
 /// # Notes
 /// The default configuration will specify 5 shares with a
 /// threshold of 3.  The maximum secret size is [`u16::MAX`] (65536)
-#[derive(Clone, Copy, Debug, Deserialize, Serialize, Setters)]
+#[derive(Builder, Clone, Copy, Debug, Deserialize, Serialize)]
 #[cfg_attr(feature = "fuzz", derive(Arbitrary))]
-#[getset(set = "pub")]
 pub struct SsssConfig {
     /// The total shares to be generate from a secret
+    #[builder(default = 5)]
     num_shares: u8,
     /// The threshold of valid shares required to unlock a secret
     /// This must be less than or equal to the number of shares
+    #[builder(default = 3)]
     threshold: u8,
     /// The maximum secret size in bytes
+    #[builder(default = usize::from(u16::MAX))]
     max_secret_size: usize,
 }
 
 impl Default for SsssConfig {
     fn default() -> Self {
-        SsssConfig {
-            num_shares: 5,
-            threshold: 3,
-            max_secret_size: usize::from(u16::MAX),
-        }
+        SsssConfig::builder().build()
     }
 }
 
@@ -232,7 +230,7 @@ fn validate_join_args(shares: &HashMap<u8, Vec<u8>>) -> Result<usize> {
 
 #[cfg(test)]
 mod test {
-    use super::{gen_shares, unlock, utils::encode_share, SsssConfig};
+    use super::{SsssConfig, gen_shares, unlock, utils::encode_share};
     use crate::utils::{check_err_result, remove_random_entry};
     use anyhow::Result;
     use rand::rng;
@@ -246,8 +244,7 @@ mod test {
 
     #[test]
     fn max_secret() -> Result<()> {
-        let mut config = SsssConfig::default();
-        _ = config.set_max_secret_size(3);
+        let config = SsssConfig::builder().max_secret_size(3).build();
         let result = gen_shares(&config, "abcd".as_bytes());
         check_err_result(
             result,
@@ -257,24 +254,21 @@ mod test {
 
     #[test]
     fn zero_parts() -> Result<()> {
-        let mut config = SsssConfig::default();
-        _ = config.set_num_shares(0);
+        let config = SsssConfig::builder().num_shares(0).build();
         let result = gen_shares(&config, "a".as_bytes());
         check_err_result(result, "The number of shares must be greater than 0")
     }
 
     #[test]
     fn zero_threshold() -> Result<()> {
-        let mut config = SsssConfig::default();
-        _ = config.set_threshold(0);
+        let config = SsssConfig::builder().threshold(0).build();
         let result = gen_shares(&config, "a".as_bytes());
         check_err_result(result, "The threshold must be greater than 0")
     }
 
     #[test]
     fn threshold_greater_than_parts() -> Result<()> {
-        let mut config = SsssConfig::default();
-        _ = config.set_threshold(6);
+        let config = SsssConfig::builder().threshold(6).build();
         let result = gen_shares(&config, "a".as_bytes());
         check_err_result(
             result,
