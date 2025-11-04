@@ -30,3 +30,7 @@ thiserror = "2.0.17"
 
 [build-dependencies]
 rustversion = "1.0.22"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
