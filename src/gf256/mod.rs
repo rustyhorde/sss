@@ -11,7 +11,7 @@
 mod constants;
 
 use self::constants::{EXP, LOG};
-use rand::RngCore;
+use rand::Rng;
 
 pub(crate) fn generate_coeffs(d: u8, x: u8) -> Vec<u8> {
     let mut rng = rand::rng();
