@@ -10,6 +10,7 @@ edition = "2024"
 cargo-fuzz = true
 
 [dependencies]
+arbitrary = "1.4.2"
 libfuzzer-sys = { version = "0.4.13", features = ["arbitrary-derive"] }
 ssss = { path = "..", features = ["fuzz"] }
 
@@ -45,3 +46,9 @@ name = "roundtrip"
 path = "fuzz_targets/roundtrip.rs"
 test = false
 doc = false
+
+# Regression tests replay previously-found crash inputs through plain `cargo test`
+# (not libFuzzer), so fixed bugs stay fixed. Run with `cargo test` in this dir.
+[[test]]
+name = "regression_unlock"
+path = "fuzz_targets/regression_unlock.rs"

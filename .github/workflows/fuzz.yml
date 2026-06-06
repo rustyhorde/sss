@@ -24,9 +24,15 @@ env:
 name: 🐛 Fuzz 🐛
 
 jobs:
-  fuzz-build:
+  fuzz-smoke:
+    name: 🧪 Fuzz Smoke (${{ matrix.target }}) 🧪
     runs-on: ubuntu-latest
-    name: 🐛 Build Fuzz Targets 🐛
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [config, gen_shares, unlock, roundtrip]
     steps:
       - name: ✅ Checkout ✅
         uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
@@ -42,5 +48,32 @@ jobs:
         uses: taiki-e/install-action@59012be0884e296ca2da49b530610e72c49039ad # v2.81.6
         with:
           tool: cargo-fuzz
-      - name: 🐛 Build Fuzz Targets 🐛
-        run: cargo +nightly fuzz build
+      - name: 🧪 Fuzz ${{ matrix.target }} (30s) 🧪
+        run: cargo +nightly fuzz run ${{ matrix.target }} -- -max_total_time=30
+      - name: 💾 Upload crash artifacts (if any) 💾
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: fuzz-crash-${{ matrix.target }}-${{ github.run_id }}
+          path: fuzz/artifacts/${{ matrix.target }}/
+          if-no-files-found: ignore
+
+  fuzz-regression:
+    name: 🔁 Fuzz Regression Tests 🔁
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: ✅ Checkout ✅
+        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+      - name: 🦀 Nightly Toolchain 🦀
+        uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # master
+        with:
+          toolchain: nightly
+      - name: 💾 Cache 💾
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          workspaces: "fuzz"
+      - name: 🔁 Run Regression Tests 🔁
+        working-directory: fuzz
+        run: cargo +nightly test
