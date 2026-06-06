@@ -8,8 +8,14 @@
 
 #![no_main]
 use libfuzzer_sys::fuzz_target;
-use ssss::{SsssConfig, gen_shares};
+use ssss::{SsssConfig, gen_shares, unlock};
 
-fuzz_target!(|data: &[u8]| {
-    let _ = gen_shares(&SsssConfig::default(), data);
+fuzz_target!(|input: (SsssConfig, Vec<u8>)| {
+    let (config, secret) = input;
+    if let Ok(shares) = gen_shares(&config, &secret) {
+        // All generated shares (>= threshold) must reconstruct the original secret.
+        if let Ok(recovered) = unlock(&shares) {
+            assert_eq!(recovered, secret);
+        }
+    }
 });

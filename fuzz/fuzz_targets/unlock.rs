@@ -1,8 +1,15 @@
+// Copyright (c) 2020 ssss developers
+//
+// Licensed under the Apache License, Version 2.0
+// <LICENSE-APACHE or http://www.apache.org/licenses/LICENSE-2.0> or the MIT
+// license <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
+// option. All files in the project carrying such notice may not be copied,
+// modified, or distributed except according to those terms.
+
 #![no_main]
 use libfuzzer_sys::fuzz_target;
 use ssss::unlock;
-use std::collections::HashMap;
 
-fuzz_target!(|data: HashMap<u8, Vec<u8>>| {
-    let _ = unlock(&data);
+fuzz_target!(|shares: Vec<String>| {
+    let _ = unlock(&shares);
 });

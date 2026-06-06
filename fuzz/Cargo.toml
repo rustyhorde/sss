@@ -2,16 +2,21 @@
 [package]
 name = "ssss-fuzz"
 version = "0.0.0"
-authors = ["Automatically generated"]
+authors = ["Jason Ozias <jason.ozias@kroger.com>"]
 publish = false
-edition = "2018"
+edition = "2024"
 
 [package.metadata]
 cargo-fuzz = true
 
 [dependencies]
-libfuzzer-sys = { version = "0.4", features = ["arbitrary-derive"] }
+libfuzzer-sys = { version = "0.4.13", features = ["arbitrary-derive"] }
 ssss = { path = "..", features = ["fuzz"] }
+
+# Build the fuzz targets with line-table debug info so libFuzzer crash
+# reports carry usable symbolicated backtraces.
+[profile.release]
+debug = 1
 
 # Prevent this from interfering with workspaces
 [workspace]
@@ -32,5 +37,11 @@ doc = false
 [[bin]]
 name = "unlock"
 path = "fuzz_targets/unlock.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "roundtrip"
+path = "fuzz_targets/roundtrip.rs"
 test = false
 doc = false
