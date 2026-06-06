@@ -28,10 +28,10 @@ jobs:
     name: 💣 Audit 💣
     steps:
       - name: ✅ Checkout ✅
-        uses: actions/checkout@v3
+        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
       - name: 💣 Audit 💣
         id: audit
-        uses: rustyhorde/audit-check@v1
+        uses: rustyhorde/audit-check@f4648bf40252eaebac4db1c36a69cff38269589e # v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           deny: "warnings"

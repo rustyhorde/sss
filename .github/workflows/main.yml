@@ -23,12 +23,12 @@ name: 🦀 Rust 🦀
 jobs:
   rustfmt:
     name: 📌 Formatting 📌
-    uses: rustyhorde/workflows/.github/workflows/rustfmt.yml@main
+    uses: rustyhorde/workflows/.github/workflows/rustfmt.yml@7a073ab416038755f63ff549d1331c9644d37cd7 # main
 
   lints-linux:
     name: 🕳️ Clippy (Linux) 🕳️
     needs: rustfmt
-    uses: rustyhorde/workflows/.github/workflows/clippy-all-features.yml@main
+    uses: rustyhorde/workflows/.github/workflows/clippy-all-features.yml@7a073ab416038755f63ff549d1331c9644d37cd7 # main
     with:
       os: ubuntu-latest
       channel: nightly
@@ -37,7 +37,7 @@ jobs:
   lints-macos:
     name: 🕳️ Clippy (MacOS) 🕳️
     needs: rustfmt
-    uses: rustyhorde/workflows/.github/workflows/clippy-all-features.yml@main
+    uses: rustyhorde/workflows/.github/workflows/clippy-all-features.yml@7a073ab416038755f63ff549d1331c9644d37cd7 # main
     with:
       os: macos-latest
       channel: nightly
@@ -46,7 +46,7 @@ jobs:
   lints-windows:
     name: 🕳️ Clippy (Windows) 🕳️
     needs: rustfmt
-    uses: rustyhorde/workflows/.github/workflows/clippy-all-features.yml@main
+    uses: rustyhorde/workflows/.github/workflows/clippy-all-features.yml@7a073ab416038755f63ff549d1331c9644d37cd7 # main
     with:
       os: windows-latest
       channel: nightly
@@ -60,7 +60,7 @@ jobs:
         os: [ubuntu-latest]
         channel: ["1.85.1", "stable", "beta", "nightly"]
         target: [x86_64-unknown-linux-gnu]
-    uses: rustyhorde/workflows/.github/workflows/test-all-features.yml@main
+    uses: rustyhorde/workflows/.github/workflows/test-all-features.yml@7a073ab416038755f63ff549d1331c9644d37cd7 # main
     with:
       os: ${{ matrix.os }}
       channel: ${{ matrix.channel }}
@@ -74,7 +74,7 @@ jobs:
         os: [macos-latest]
         channel: ["1.85.1", "stable", "beta", "nightly"]
         target: [apple-darwin]
-    uses: rustyhorde/workflows/.github/workflows/test-all-features.yml@main
+    uses: rustyhorde/workflows/.github/workflows/test-all-features.yml@7a073ab416038755f63ff549d1331c9644d37cd7 # main
     with:
       os: ${{ matrix.os }}
       channel: ${{ matrix.channel }}
@@ -88,7 +88,7 @@ jobs:
         os: [windows-latest]
         channel: ["1.85.1", "stable", "beta", "nightly"]
         target: [x86_64-pc-windows-gnu, x86_64-pc-windows-msvc]
-    uses: rustyhorde/workflows/.github/workflows/test-all-features.yml@main
+    uses: rustyhorde/workflows/.github/workflows/test-all-features.yml@7a073ab416038755f63ff549d1331c9644d37cd7 # main
     with:
       os: ${{ matrix.os }}
       channel: ${{ matrix.channel }}
@@ -97,7 +97,7 @@ jobs:
   coverage-linux:
     name: 🧱 Coverage (Linux) 🧱
     needs: test-linux
-    uses: rustyhorde/workflows/.github/workflows/coverage.yml@main
+    uses: rustyhorde/workflows/.github/workflows/coverage.yml@7a073ab416038755f63ff549d1331c9644d37cd7 # main
     with:
       os: ubuntu-latest
       channel: nightly
@@ -109,7 +109,7 @@ jobs:
   coverage-macos:
     name: 🧱 Coverage (MacOS) 🧱
     needs: test-macos
-    uses: rustyhorde/workflows/.github/workflows/coverage.yml@main
+    uses: rustyhorde/workflows/.github/workflows/coverage.yml@7a073ab416038755f63ff549d1331c9644d37cd7 # main
     with:
       os: macos-latest
       channel: nightly
@@ -124,7 +124,7 @@ jobs:
     strategy:
       matrix:
         target: [x86_64-pc-windows-gnu, x86_64-pc-windows-msvc]
-    uses: rustyhorde/workflows/.github/workflows/coverage.yml@main
+    uses: rustyhorde/workflows/.github/workflows/coverage.yml@7a073ab416038755f63ff549d1331c9644d37cd7 # main
     with:
       os: windows-latest
       channel: nightly
@@ -151,6 +151,6 @@ jobs:
             wasm32-unknown-emscripten,
             x86_64-unknown-linux-musl,
           ]
-    uses: rustyhorde/workflows/.github/workflows/build-tier2.yml@main
+    uses: rustyhorde/workflows/.github/workflows/build-tier2.yml@7a073ab416038755f63ff549d1331c9644d37cd7 # main
     with:
       target: ${{ matrix.target }}
