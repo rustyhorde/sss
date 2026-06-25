@@ -1,0 +1,185 @@
+# =============================================================================
+# Rakefile.toml — ssss build pipeline
+#
+# Quick reference:
+#
+#   cargo rake                           default (most: fmt→clippy→build→test→docs→coverage)
+#   cargo rake most ^test ^coverage      skip tests and coverage
+#   cargo rake most ^coverage            skip coverage only
+#   cargo rake most clean                add cargo clean
+#   cargo rake all                       everything (puc + most + fuzz + clean)
+#   cargo rake daily                     all except fuzz (morning full-pipeline run)
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# tools
+# ---------------------------------------------------------------------------
+
+[tool.cargo.matrix]
+crate = "cargo-matrix"
+check = ["cargo", "matrix", "--version"]
+install = ["cargo", "install", "cargo-matrix", "--force", "--locked"]
+update = true
+
+[tool.cargo.nextest]
+crate = "cargo-nextest"
+check = ["cargo", "nextest", "--version"]
+install = ["cargo", "install", "cargo-nextest", "--force", "--locked"]
+update = true
+
+[tool.cargo.llvm-cov]
+crate = "cargo-llvm-cov"
+check = ["cargo", "llvm-cov", "--version"]
+install = ["cargo", "install", "cargo-llvm-cov", "--force", "--locked"]
+update = true
+
+[tool.cargo.fuzz]
+crate = "cargo-fuzz"
+check = ["cargo", "fuzz", "--version"]
+install = ["cargo", "install", "cargo-fuzz", "--force", "--locked"]
+update = true
+
+[tool.fish.puc]
+hint = "The 'puc' fish function is required to run this target"
+
+# ---------------------------------------------------------------------------
+# update
+# ---------------------------------------------------------------------------
+
+[target.puc]
+tools = ["puc"]
+[[target.puc.command]]
+name = "puc"
+platform = ["linux"]
+fish = "puc"
+
+# ---------------------------------------------------------------------------
+# fmt
+# ---------------------------------------------------------------------------
+
+[[target.fmt.command]]
+name = "fmt"
+cmd = ["cargo", "fmt"]
+
+[[target.fmt.command]]
+name = "fmt check"
+cmd = ["cargo", "fmt", "--all", "--", "--check"]
+
+# ---------------------------------------------------------------------------
+# clippy
+# ---------------------------------------------------------------------------
+
+[target.clippy]
+tools = ["matrix"]
+
+[[target.clippy.command]]
+name = "clippy"
+cmd = ["cargo", "matrix", "clippy", "--all-targets", "--", "-Dwarnings"]
+
+# ---------------------------------------------------------------------------
+# build
+# ---------------------------------------------------------------------------
+
+[target.build]
+tools = ["matrix"]
+
+[[target.build.command]]
+name = "build"
+cmd = ["cargo", "matrix", "build"]
+
+# ---------------------------------------------------------------------------
+# test
+# ---------------------------------------------------------------------------
+
+[target.test]
+depends_on = ["build"]
+tools = ["matrix", "nextest"]
+
+[[target.test.command]]
+name = "nextest"
+cmd = ["cargo", "matrix", "nextest", "run"]
+
+[[target.test.command]]
+name = "doc test"
+cmd = ["cargo", "matrix", "test", "--doc"]
+
+# ---------------------------------------------------------------------------
+# docs
+# ---------------------------------------------------------------------------
+
+[[target.docs.command]]
+name = "docs"
+cmd = ["cargo", "doc", "--all-features"]
+
+# ---------------------------------------------------------------------------
+# coverage
+# ---------------------------------------------------------------------------
+
+[target.coverage]
+depends_on = ["test"]
+tools = ["llvm-cov", "matrix", "nextest"]
+
+[[target.coverage.command]]
+name = "coverage"
+cmd = ["cargo", "matrix", "llvm-cov", "-F", "unstable", "nextest", "--no-report"]
+
+[[target.coverage.command]]
+name = "lcov.info"
+cmd = ["cargo", "llvm-cov", "report", "--lcov", "--output-path", "lcov.info"]
+
+[[target.coverage.command]]
+name = "html"
+cmd = ["cargo", "llvm-cov", "report", "--html"]
+
+# ---------------------------------------------------------------------------
+# clean
+# ---------------------------------------------------------------------------
+
+[[target.clean.command]]
+name = "clean"
+cmd = ["cargo", "clean"]
+
+[[target.clean.command]]
+name = "rm lcov.info"
+fish = "rm -f lcov.info"
+sh = "rm -f lcov.info"
+ps = "Remove-Item -Force lcov.info -ErrorAction Ignore"
+
+# ---------------------------------------------------------------------------
+# fuzz
+# ---------------------------------------------------------------------------
+
+[target.fuzz]
+tools = ["fuzz"]
+
+[[target.fuzz.command]]
+name = "config"
+cmd = ["cargo", "+nightly", "fuzz", "run", "config", "--", "-max_total_time=30"]
+
+[[target.fuzz.command]]
+name = "gen_shares"
+cmd = ["cargo", "+nightly", "fuzz", "run", "gen_shares", "--", "-max_total_time=30"]
+
+[[target.fuzz.command]]
+name = "unlock"
+cmd = ["cargo", "+nightly", "fuzz", "run", "unlock", "--", "-max_total_time=30"]
+
+[[target.fuzz.command]]
+name = "roundtrip"
+cmd = ["cargo", "+nightly", "fuzz", "run", "roundtrip", "--", "-max_total_time=30"]
+
+# ---------------------------------------------------------------------------
+# aggregates
+# ---------------------------------------------------------------------------
+
+[target.most]
+depends_on = ["fmt", "clippy", "build", "test", "docs", "coverage"]
+
+[target.all]
+depends_on = ["puc", "fmt", "clippy", "build", "test", "docs", "coverage", "fuzz", "clean"]
+
+[target.daily]
+depends_on = ["all", "^fuzz"]
+
+[target.default]
+depends_on = ["most"]
