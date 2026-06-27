@@ -46,12 +46,20 @@ hint = "The 'puc' fish function is required to run this target"
 # update
 # ---------------------------------------------------------------------------
 
-[target.puc]
+[target.puc.linux]
 tools = ["puc"]
-[[target.puc.command]]
+
+[[target.puc.linux.command]]
 name = "puc"
-platform = ["linux"]
 fish = "puc"
+
+[[target.puc.command]]
+name = "pull"
+cmd = ["git", "pull"]
+
+[[target.puc.command]]
+name = "puc clean"
+cmd = ["cargo", "clean"]
 
 # ---------------------------------------------------------------------------
 # fmt
