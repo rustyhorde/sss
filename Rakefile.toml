@@ -189,5 +189,8 @@ depends_on = ["puc", "fmt", "clippy", "build", "test", "docs", "coverage", "fuzz
 [target.daily]
 depends_on = ["all", "^fuzz"]
 
+[target.daily.windows]
+depends_on = [ "most" ]
+
 [target.default]
 depends_on = ["most"]
