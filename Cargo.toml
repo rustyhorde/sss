@@ -19,17 +19,17 @@ unstable = []
 
 [dependencies]
 arbitrary = { version = "1.4.2", optional = true, features = ["derive"] }
-anyhow = "1.0.102"
-bon = "3.9.1"
-num-bigint = "0.4.6"
+anyhow = "1.0.103"
+bon = "3.9.3"
+num-bigint = "0.5.1"
 num-traits = "0.2.19"
 num-integer = "0.1.46"
-rand = "0.10.1"
+rand = "0.10.2"
 serde = { version = "1.0.228", features = ["derive"] }
 thiserror = "2.0.18"
 
 [build-dependencies]
-rustversion = "1.0.22"
+rustversion = "1.0.23"
 
 [package.metadata.docs.rs]
 all-features = true
