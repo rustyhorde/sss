@@ -2,3 +2,4 @@
 Cargo.lock
 lcov.info
 .cargo/config.toml
+/.rake
